@@ -1,0 +1,10 @@
+/.vs
+/TuviSRPLib/.vs
+/TuviSRPLib/TuviSRPLib/bin
+/TuviSRPLib/TuviSRPLib/obj
+/TuviSRPLib/TuviSRPLibTests/bin
+/TuviSRPLib/TuviSRPLibTests/obj
+/TuviSRPLib/ProtonBase64Lib/bin
+/TuviSRPLib/ProtonBase64Lib/obj
+
+
