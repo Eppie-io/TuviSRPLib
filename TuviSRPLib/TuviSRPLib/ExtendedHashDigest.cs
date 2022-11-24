@@ -1,20 +1,12 @@
 ﻿using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Crypto.Generators;
-using Org.BouncyCastle.Utilities;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Security.Cryptography;
-using System.Text;
 
 namespace TuviSRPLib
 {
     public class ExtendedHashDigest : IDigest
     {
-        //private byte[] salt;
         private byte[] message;
-        //private int cost;
         private const int DigestLength = 256;
 
         public ExtendedHashDigest()
@@ -26,7 +18,21 @@ namespace TuviSRPLib
 
         public void BlockUpdate(byte[] input, int inOff, int length)
         {
-            // TODO: add check
+            if (input is null)
+            {
+                throw new ArgumentNullException(nameof(input));
+            }
+
+            if (inOff < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(inOff), "Parameter inOff can not be negative.");
+            }
+
+            if (length < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(length), "Parameter length can not be negative.");
+            }
+
             byte[] newMessage = new byte[message.Length + length];
             Array.Copy(message, newMessage, message.Length);
             Array.Copy(input, inOff, newMessage, message.Length, length);
@@ -35,7 +41,16 @@ namespace TuviSRPLib
 
         public int DoFinal(byte[] output, int outOff)
         {
-            // TODO: checks
+            if (output is null)
+            {
+                throw new ArgumentNullException(nameof(output));
+            }
+
+            if (outOff < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(outOff), "Parameter inOff can not be negative.");
+            }
+
             var result = ExpandHash(message); // Was MyBCrypt.Generate(message, salt, cost);
             Array.Copy(result, 0, output, outOff, result.Length);
 
@@ -56,13 +71,7 @@ namespace TuviSRPLib
 
         public void Reset()
         {
-            //salt = new byte[16];
             message = new byte[0];
-            //cost = 4;
-            
-            //byteCount = 0;
-            //xBufOff = 0;
-            //Array.Clear(message, 0, xBuf.Length);
         }
 
         public void Update(byte input)
@@ -73,20 +82,8 @@ namespace TuviSRPLib
             message = newMessage;
         }
 
-        
-
-        //private byte[] HashPassword(byte[]password, byte[] salt, byte[] modulus)
-        //{
-        //    var result = MyBCrypt.Generate(password, salt, cost);
-        //    byte[] tempData = new byte[result.Length + modulus.Length];
-        //    Array.Copy(result, tempData, result.Length);
-        //    Array.Copy(modulus, 0, tempData, 0, modulus.Length);
-        //    return ExpandHash(tempData);
-        //}
-
         private byte[] ExpandHash(byte[] data)
         {
-            //byte[] part0 = SHA512.HashData(idPassBytes);
             var sha512 = SHA512.Create();
             byte[] tempData = new byte[data.Length + 1];
             Array.Copy(data, tempData, data.Length);
@@ -105,39 +102,5 @@ namespace TuviSRPLib
             Array.Copy(part3, 0, result, 192, 64);
             return result;
         }
-
-
-
-        //public string AlgorithmName => throw new NotImplementedException();
-
-        //public void BlockUpdate(byte[] input, int inOff, int length)
-        //{
-        //    throw new NotImplementedException();
-        //}
-
-        //public int DoFinal(byte[] output, int outOff)
-        //{
-        //    throw new NotImplementedException();
-        //}
-
-        //public int GetByteLength()
-        //{
-        //    throw new NotImplementedException();
-        //}
-
-        //public int GetDigestSize()
-        //{
-        //    throw new NotImplementedException();
-        //}
-
-        //public void Reset()
-        //{
-        //    throw new NotImplementedException();
-        //}
-
-        //public void Update(byte input)
-        //{
-        //    throw new NotImplementedException();
-        //}
     }
 }

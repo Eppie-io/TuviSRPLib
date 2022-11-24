@@ -15,25 +15,47 @@ namespace TuviSRPLib
         private const string proton = "proton";
         private const int cost = 10;
 
+        /// <summary>
+        /// Calculates value of multiplier K.
+        /// </summary>
+        /// <param name="digest">Digest (hash algorithm).</param>
+        /// <param name="g">Field generator.</param>
+        /// <param name="N">Field order.</param>
+        /// <returns>Multiplier value.</returns>
         public static BigInteger CalculateK(IDigest digest, BigInteger g, BigInteger N)
         {
             return HashPaddedPair(digest, N, g, N);
         }
 
+        /// <summary>
+        /// Calculates parameter U or ScrambleParam in Proton realization.
+        /// </summary>
+        /// <param name="digest">Digest (hash algorithm).</param>
+        /// <param name="N">Field order.</param>
+        /// <param name="A">Client's public value.</param>
+        /// <param name="B">Server's public value.</param>
+        /// <returns>U value.</returns>
         public static BigInteger CalculateU(IDigest digest, BigInteger N, BigInteger A, BigInteger B)
         {
             return HashPaddedPair(digest, N, A, B);
         }
 
+        /// <summary>
+        /// Calculates parameter X or HashedPassword in Proton realization.
+        /// </summary>
+        /// <param name="digest">Digest (hash algorithm).</param>
+        /// <param name="N">Field order.</param>
+        /// <param name="salt">Salt.</param>
+        /// <param name="identity">Client's identity (User name).</param>
+        /// <param name="password">Password.</param>
+        /// <returns>X value.</returns>
         public static BigInteger CalculateX(IDigest digest, BigInteger N, byte[] salt, byte[] identity, byte[] password)
         {
             int paddedLength = (N.BitLength + 7) / 8;
-            //int digestSize = digest.GetDigestSize();
             byte[] output = new byte[digest.GetDigestSize()];
             Encoding enc = Encoding.UTF8;
             byte[] byteProton = enc.GetBytes(proton);
             var extSalt = Append(salt, byteProton);
-            //var slt = Base64.Encode(extSalt);
 
             var newPassword = Append(password, new byte[] { 0 });
 
@@ -42,9 +64,7 @@ namespace TuviSRPLib
             var message = FormMessage(extSalt, hashedPassword);
 
             digest.BlockUpdate(message, 0, message.Length);
-            //byte[] bytes = new byte[paddedLength];
-            //BigIntegers.AsUnsignedByteArray(N, bytes, 0, bytes.Length);
-            byte[] bytes = N.ToLowEndianByteArray();
+            byte[] bytes = N.ToLowEndianNByteArray(paddedLength);
             digest.BlockUpdate(bytes, 0, bytes.Length);
 
             digest.DoFinal(output, 0);
@@ -52,8 +72,15 @@ namespace TuviSRPLib
             return new BigInteger(1, output.Reverse().ToArray());
         }
 
+        /// <summary>
+        /// Forming special sequence of bytes used in proton protocol.
+        /// </summary>
+        /// <param name="extSalt">Extended salt (salt + "proton").</param>
+        /// <param name="hashedPassword">Hashed password (bcrypt algorithm).</param>
+        /// <returns>Byte sequence.</returns>
         private static byte[] FormMessage(byte[] extSalt, byte[] hashedPassword)
         {
+            //TODO: create dynamic prefix according to proton realization
             byte[] prefix = new byte[] { 36, 50, 121, 36, 49, 48, 36 }; // "$2y$10$
             
             var addSalt = ProtonBase64.Encode(extSalt);
@@ -65,7 +92,16 @@ namespace TuviSRPLib
             return Append(Append(prefix, addSalt), addPass);
         }
 
-        
+        /// <summary>
+        /// Calculates verifier V.
+        /// </summary>
+        /// <param name="digest">Digest (hash algorithm).</param>
+        /// <param name="N">Field order.</param>
+        /// <param name="g">Field generator.</param>
+        /// <param name="salt">Salt.</param>
+        /// <param name="identity">Client's identity (User name).</param>
+        /// <param name="password">Password.</param>
+        /// <returns>Verifier value.</returns>
         public static BigInteger CalculateVerifier(IDigest digest, BigInteger N, BigInteger g, byte[] salt, byte[] identity, byte[] password)
         {
             var x = CalculateX(digest, N, salt, identity, password);
@@ -178,16 +214,6 @@ namespace TuviSRPLib
 
             return new BigInteger(1, output.Reverse().ToArray());
         }
-
-
-        public static BigInteger ReverseBigInteger(BigInteger number)
-        {
-            byte[] bytes = new byte[256];
-            BigIntegers.AsUnsignedByteArray(number, bytes, 0, bytes.Length);
-            
-            return new BigInteger(1, bytes.Reverse().ToArray());
-        }
-
 
         private static byte[] Append(byte[] arr1, byte[] arr2)
         {

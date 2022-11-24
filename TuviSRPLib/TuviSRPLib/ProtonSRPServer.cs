@@ -93,7 +93,8 @@ namespace TuviSRPLib
 
         private BigInteger CalculateS()
         {
-            return v.ModPow(u, N).Multiply(A).Mod(N).ModPow(privB, N);
+            var basement = v.ModPow(u, N).Multiply(A).Mod(N);
+            return basement.ModPow(privB, N);
         }
 
         /** 

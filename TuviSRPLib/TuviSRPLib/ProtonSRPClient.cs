@@ -58,7 +58,7 @@ namespace TuviSRPLib
 
         /// <summary>
         /// Initialises the client to begin new authentication attempt 
-        /// andg enerates client's credentials given the client's private key, salt, identity and password
+        /// and generates client's credentials given the client's private key, salt, identity and password
         /// </summary>
         /// <param name="N">The safe prime associated with the client's verifier.</param>
         /// <param name="g">The group generator (always 2 for proton) associated with the client's verifier.</param>
@@ -68,7 +68,7 @@ namespace TuviSRPLib
         /// <param name="salt">Client's salt.</param>
         /// <param name="identity">Client's identity.</param>
         /// <param name="password">Client's password.</param>
-        /// <returns></returns>
+        /// <returns>Client's public value to send to server.</returns>
         public virtual BigInteger InitAndGenerateCredential(BigInteger N, BigInteger g, IDigest digest, SecureRandom random,
             BigInteger privA, byte[] salt, byte[] identity, byte[] password)
         {
@@ -77,10 +77,8 @@ namespace TuviSRPLib
             this.digest = digest;
             this.random = random;
             this.x = ProtonSRPUtilities.CalculateX(digest, N, salt, identity, password);
-            //byte[] xBytes = x.ToLowEndianByteArray();
             this.privA = privA;
             this.pubA = g.ModPow(privA, N);
-            //byte[] bytes = pubA.ToByteArrayUnsigned();
             return pubA;
         }
 
@@ -110,9 +108,7 @@ namespace TuviSRPLib
         {
             this.B = ProtonSRPUtilities.ValidatePublicValue(N, serverB);
             this.u = ProtonSRPUtilities.CalculateU(digest, N, pubA, B);
-            //byte[] uBytes = u.ToByteArrayUnsigned();
             this.S = CalculateS();
-            //byte[] sBytes = S.ToByteArrayUnsigned();
 
             return S;
         }
@@ -125,32 +121,16 @@ namespace TuviSRPLib
         private BigInteger CalculateS()
         {
             BigInteger k = ProtonSRPUtilities.CalculateK(digest, g, N);
-            //byte[] kBytes = k.ToLowEndianByteArray();
 
             var modMinusOne = N.Subtract(new BigInteger("1"));
-            //byte[] modBytes = modMinusOne.ToLowEndianByteArray();
-
-            //byte[] ubytes = u.ToLowEndianByteArray();
-            //byte[] xbytes = x.ToLowEndianByteArray();
 
             BigInteger tempExp = u.Multiply(x).Mod(modMinusOne);
-            //byte[] tempExpBytes = tempExp.ToLowEndianByteArray();
 
             BigInteger exp = tempExp.Add(privA).Mod(modMinusOne);
-            //byte[] bytes = exp.ToByteArrayUnsigned();   
-
-            //BigInteger exp = u.Multiply(x).Add(privA);
-            //byte[] expBytes = exp.ToLowEndianByteArray();
-
-            //BigInteger tmp1 = g.ModPow(ProtonSRPUtilities.ReverseBigInteger(x), reversedN);
-            //byte[] tmp1Bytes = tmp1.ToByteArrayUnsigned();
             BigInteger tmp = g.ModPow(x, N).Multiply(k).Mod(N);
-            //byte[] tmpBytes = tmp.ToByteArrayUnsigned();
             var basement = B.Subtract(tmp).Mod(N);
-            //byte[] baseBytes = basement.ToLowEndianByteArray();
 
             var result = basement.ModPow(exp, N);
-            //byte[] resBytes = result.ToByteArrayUnsigned();
 
             return result;
         }
