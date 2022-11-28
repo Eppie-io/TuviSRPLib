@@ -4,11 +4,19 @@ using System.Text;
 
 namespace ProtonBase64Lib
 {
+    /// <summary>
+    /// Base64 algorithm with dictionary used in Proton SRP protocol.
+    /// </summary>
     public static class ProtonBase64
     {
+        /// <summary>
+        /// Current Base64 algorithm tramsforms bytes(8-bits) sequence into 6-bits sequence. 
+        /// Then converts 6-bits elements into symbols of choosen dictionary.
+        /// So, to calculate size of this sequences we need following parameters:
+        /// </summary>
         private const int BaseValue = 64;
-        private const int ByteSize = 8;
-        private const int SixBitsSize = 6;
+        private const int EightBitsSize = 8; // byte size
+        private const int SixBitsSize = 6; // log2(64)
         private const string ProtonBase64Dictionary = "./ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
         /// <summary>
@@ -60,7 +68,7 @@ namespace ProtonBase64Lib
         }
 
         /// <summary>
-        /// Decode Base64 string into an byte array.
+        /// Decode Base64 string into a byte array.
         /// </summary>
         /// <param name="base64String">String of allowed symbols.</param>
         /// <returns>Array of bytes.</returns>
@@ -104,8 +112,8 @@ namespace ProtonBase64Lib
                 throw new ArgumentException("Array should contain at least 1 element.");
             }
 
-            int remainder = array.Length * ByteSize % SixBitsSize;
-            int size = remainder == 0 ? array.Length * ByteSize / SixBitsSize : array.Length * ByteSize / SixBitsSize + 1;
+            int remainder = array.Length * EightBitsSize % SixBitsSize;
+            int size = remainder == 0 ? array.Length * EightBitsSize / SixBitsSize : array.Length * EightBitsSize / SixBitsSize + 1;
             
             int currentPosition = size - 1;
             byte[] result = new byte[size];
@@ -141,7 +149,7 @@ namespace ProtonBase64Lib
             }
 
             BigInteger number = 0;
-            int size = array.Length * SixBitsSize / ByteSize;
+            int size = array.Length * SixBitsSize / EightBitsSize;
             byte[] resultArray = new byte[size];
             for (int i = 0; i < array.Length; i++)
             {
@@ -154,7 +162,7 @@ namespace ProtonBase64Lib
                 number |= array[i];
             }
 
-            int remainder = array.Length * SixBitsSize % ByteSize;
+            int remainder = array.Length * SixBitsSize % EightBitsSize;
 
             number = number >> remainder; //return to original size
 
@@ -188,7 +196,7 @@ namespace ProtonBase64Lib
             int value = ProtonBase64Dictionary.IndexOf(symbol);
             if (value == -1)
             {
-                throw new ArgumentException("Wrong symbol", nameof(symbol));
+                throw new ArgumentException("Wrong symbol.", nameof(symbol));
             }
             else
             {

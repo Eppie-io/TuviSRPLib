@@ -15,13 +15,11 @@ namespace TuviSRPLibTests
             var decodedN = Base64.Decode(encodedN);
             BigInteger N = new BigInteger(1, decodedN.Reverse().ToArray());
             BigInteger g = new BigInteger("2");
-
-            string identity = "ivanov";
+            
             string password = "qwerty";
-            string salt = "some bytes";
+            string salt = "some bytes"; // exactly 10 symbols for Proton protocol. Bcrypt uses salt with specific length.
 
             Encoding enc = Encoding.UTF8;
-            byte[] identityBytes = enc.GetBytes(identity);
             byte[] passwordBytes = enc.GetBytes(password);
             byte[] saltBytes = enc.GetBytes(salt);
 
@@ -29,16 +27,16 @@ namespace TuviSRPLibTests
             ProtonSRPServer server = new ProtonSRPServer();
             IDigest digest = new ExtendedHashDigest();
 
-            var verifier = ProtonSRPUtilities.CalculateVerifier(digest, N, g, saltBytes, identityBytes, passwordBytes);
+            var verifier = ProtonSRPUtilities.CalculateVerifier(digest, N, g, saltBytes, passwordBytes);
 
             server.Init(N, g, verifier, digest, new SecureRandom());
             client.Init(N, g, digest, new SecureRandom());
 
-            BigInteger pubA = client.GenerateClientCredentials(saltBytes, identityBytes, passwordBytes);
+            BigInteger pubA = client.GenerateClientCredentials(saltBytes, passwordBytes);
             BigInteger pubB = server.GenerateServerCredentials();
 
-            BigInteger serverSecret = server.CalculateSecret(pubA);
-            BigInteger clientSecret = client.CalculateSecret(pubB);
+            server.CalculateSecret(pubA);
+            client.CalculateSecret(pubB);
 
             BigInteger M1 = client.CalculateClientEvidenceMessage();
             Assert.IsTrue(server.VerifyClientEvidenceMessage(M1), "Message M1 is not verified.");
@@ -79,29 +77,124 @@ namespace TuviSRPLibTests
 
             //Digest
             IDigest digest = new ExtendedHashDigest();
-            
+
             //Test data
-            string identity = "jakubqa";
+            //string identity = "jakubqa"; Proton SRP protocol doesn't use UserName(Identity) calculating Verifier
             string password = "abc123";
             string salt = "yKlc5/CvObfoiw==";
             string prA = "10547061652029274211379670715837497191923711392100181473801853905808809915196907607203711902581702530909229913139029064200053653545356956180378507124271109459013112604023928943361222711612802880534999338627841076012785708089125889096845658736374227261674415889530408226129007272971994571573711799978768722905740355338656395674139700290418014119543614116447579043620139396281282725306429481228395234306648949282792144922413465416627055298443842406176782173942480534905749407414063778620271297106813842950024831635672697955431839334459563366906834842208162136118219911675083220520501587197458892001573436641639539315377";
             BigInteger privA = new BigInteger(prA);
             
             Encoding enc = Encoding.UTF8;
-            byte[] identityBytes = enc.GetBytes(identity);
             byte[] passwordBytes = enc.GetBytes(password);
             byte[] saltBytes = Base64.Decode(salt);
 
             //Client creation
             ProtonSRPClient client = new ProtonSRPClient();
 
-            var pubA = client.InitAndGenerateCredential(N, g, digest, new SecureRandom(), privA, saltBytes, identityBytes, passwordBytes);
-            BigInteger clientSecret = client.CalculateSecret(pubB);
+            client.InitAndGenerateCredential(N, g, digest, new SecureRandom(), privA, saltBytes, /*identityBytes,*/ passwordBytes);
+            client.CalculateSecret(pubB);
 
             BigInteger M1 = client.CalculateClientEvidenceMessage();
             Assert.AreEqual(expectedM1, M1);
 
             Assert.IsTrue(client.VerifyServerEvidenceMessage(expectedM2), "Message M2 is not verified.");
+        }
+
+        [TestCase("123456")]
+        [TestCase("qwerty123")]
+        public void WrongPassword_FalseVerifyingTests(string wrongPassword)
+        {
+            var encodedN = "W2z5HBi8RvsfYzZTS7qBaUxxPhsfHJFZpu3Kd6s1JafNrCCH9rfvPLrfuqocxWPgWDH2R8neK7PkNvjxto9TStuY5z7jAzWRvFWN9cQhAKkdWgy0JY6ywVn22+HFpF4cYesHrqFIKUPDMSSIlWjBVmEJZ/MusD44ZT29xcPrOqeZvwtCffKtGAIjLYPZIEbZKnDM1Dm3q2K/xS5h+xdhjnndhsrkwm9U9oyA2wxzSXFL+pdfj2fOdRwuR5nW0J2NFrq3kJjkRmpO/Genq1UW+TEknIWAb6VzJJJA244K/H8cnSx2+nSNZO3bbo6Ys228ruV9A8m6DhxmS+bihN3ttQ==";
+            var decodedN = Base64.Decode(encodedN);
+            BigInteger N = new BigInteger(1, decodedN.Reverse().ToArray());
+            BigInteger g = new BigInteger("2");
+
+            string password = "qwerty"; // expected password
+            string salt = "some bytes"; // expected salt
+
+            Encoding enc = Encoding.UTF8;
+            byte[] passwordBytes = enc.GetBytes(password);
+            byte[] saltBytes = enc.GetBytes(salt);
+            byte[] wrongPasswordBytes = enc.GetBytes(wrongPassword);
+
+            ProtonSRPClient client = new ProtonSRPClient();
+            ProtonSRPServer server = new ProtonSRPServer();
+            IDigest digest = new ExtendedHashDigest();
+
+            var verifier = ProtonSRPUtilities.CalculateVerifier(digest, N, g, saltBytes, passwordBytes);
+
+            server.Init(N, g, verifier, digest, new SecureRandom());
+            client.Init(N, g, digest, new SecureRandom());
+
+            BigInteger pubA = client.GenerateClientCredentials(saltBytes, wrongPasswordBytes);
+            BigInteger pubB = server.GenerateServerCredentials();
+
+            server.CalculateSecret(pubA);
+            client.CalculateSecret(pubB);
+
+            BigInteger M1 = client.CalculateClientEvidenceMessage();
+            Assert.IsFalse(server.VerifyClientEvidenceMessage(M1), "Message M1 is verified while it should not.");
+        }
+
+        [TestCase("1234567890")]
+        [TestCase("qwerty1234")]
+        [TestCase("OtherBytes")]
+        public void WrongSalt_FalseVerifyingTests(string wrongSalt)
+        {
+            var encodedN = "W2z5HBi8RvsfYzZTS7qBaUxxPhsfHJFZpu3Kd6s1JafNrCCH9rfvPLrfuqocxWPgWDH2R8neK7PkNvjxto9TStuY5z7jAzWRvFWN9cQhAKkdWgy0JY6ywVn22+HFpF4cYesHrqFIKUPDMSSIlWjBVmEJZ/MusD44ZT29xcPrOqeZvwtCffKtGAIjLYPZIEbZKnDM1Dm3q2K/xS5h+xdhjnndhsrkwm9U9oyA2wxzSXFL+pdfj2fOdRwuR5nW0J2NFrq3kJjkRmpO/Genq1UW+TEknIWAb6VzJJJA244K/H8cnSx2+nSNZO3bbo6Ys228ruV9A8m6DhxmS+bihN3ttQ==";
+            var decodedN = Base64.Decode(encodedN);
+            BigInteger N = new BigInteger(1, decodedN.Reverse().ToArray());
+            BigInteger g = new BigInteger("2");
+
+            string password = "qwerty"; // expected password
+            string salt = "some bytes"; // expected salt
+
+            Encoding enc = Encoding.UTF8;
+            byte[] passwordBytes = enc.GetBytes(password);
+            byte[] saltBytes = enc.GetBytes(salt);
+            byte[] wrongSaltBytes = enc.GetBytes(wrongSalt);
+
+            ProtonSRPClient client = new ProtonSRPClient();
+            ProtonSRPServer server = new ProtonSRPServer();
+            IDigest digest = new ExtendedHashDigest();
+
+            var verifier = ProtonSRPUtilities.CalculateVerifier(digest, N, g, saltBytes, passwordBytes);
+
+            server.Init(N, g, verifier, digest, new SecureRandom());
+            client.Init(N, g, digest, new SecureRandom());
+
+            BigInteger pubA = client.GenerateClientCredentials(wrongSaltBytes, passwordBytes);
+            BigInteger pubB = server.GenerateServerCredentials();
+
+            server.CalculateSecret(pubA);
+            client.CalculateSecret(pubB);
+
+            BigInteger M1 = client.CalculateClientEvidenceMessage();
+            Assert.IsFalse(server.VerifyClientEvidenceMessage(M1), "Message M1 is verified while it should not.");
+        }
+
+        [TestCase("SaltBytes")]
+        [TestCase("A lot Bytes")]
+        public void WrongSaltSize_ThrowArgumentExceptionTests(string wrongSalt)
+        {
+            var encodedN = "W2z5HBi8RvsfYzZTS7qBaUxxPhsfHJFZpu3Kd6s1JafNrCCH9rfvPLrfuqocxWPgWDH2R8neK7PkNvjxto9TStuY5z7jAzWRvFWN9cQhAKkdWgy0JY6ywVn22+HFpF4cYesHrqFIKUPDMSSIlWjBVmEJZ/MusD44ZT29xcPrOqeZvwtCffKtGAIjLYPZIEbZKnDM1Dm3q2K/xS5h+xdhjnndhsrkwm9U9oyA2wxzSXFL+pdfj2fOdRwuR5nW0J2NFrq3kJjkRmpO/Genq1UW+TEknIWAb6VzJJJA244K/H8cnSx2+nSNZO3bbo6Ys228ruV9A8m6DhxmS+bihN3ttQ==";
+            var decodedN = Base64.Decode(encodedN);
+            BigInteger N = new BigInteger(1, decodedN.Reverse().ToArray());
+            BigInteger g = new BigInteger("2");
+
+            string password = "qwerty"; 
+
+            Encoding enc = Encoding.UTF8;
+            byte[] passwordBytes = enc.GetBytes(password);
+            byte[] wrongSaltBytes = enc.GetBytes(wrongSalt);
+
+            IDigest digest = new ExtendedHashDigest();
+
+            ProtonSRPClient client = new ProtonSRPClient();
+            client.Init(N, g, digest, new SecureRandom());
+
+            Assert.Throws<ArgumentException>(() => client.GenerateClientCredentials(wrongSaltBytes, passwordBytes));
         }
     }
 }

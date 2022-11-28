@@ -3,15 +3,16 @@ using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Math;
 using Org.BouncyCastle.Security;
+using Org.BouncyCastle.Utilities.Encoders;
 
 namespace TuviSRPLib
 {
-    /**
-	 * Implements the client side SRP-6a protocol. Note that this class is stateful, and therefore NOT threadsafe.
-	 * This implementation of SRP is based on the optimized message sequence put forth by Thomas Wu in the paper
-	 * "SRP-6: Improvements and Refinements to the Secure Remote Password Protocol, 2002"
-	 */
-    public class ProtonSRPClient
+    /// <summary>
+    /// Implements the client side of SRP protocol used in Proton realization with all changes. Based on the BouncyCastle lib
+    /// https://github.com/bcgit/bc-csharp/blob/master/crypto/src/crypto/agreement/srp/SRP6Client.cs
+    /// Proton SRP protocol doesn't use UserName(Identity) calculating Verifier.
+    /// </summary>
+    public partial class ProtonSRPClient
     {
         protected BigInteger N;
         protected BigInteger g; // In Proton g = 2 always
@@ -58,7 +59,8 @@ namespace TuviSRPLib
 
         /// <summary>
         /// Initialises the client to begin new authentication attempt 
-        /// and generates client's credentials given the client's private key, salt, identity and password
+        /// and generates client's credentials given the client's private key, salt and password.
+        /// Proton SRP protocol doesn't use UserName(Identity) calculating Verifier.
         /// </summary>
         /// <param name="N">The safe prime associated with the client's verifier.</param>
         /// <param name="g">The group generator (always 2 for proton) associated with the client's verifier.</param>
@@ -66,32 +68,31 @@ namespace TuviSRPLib
         /// <param name="random">Random for key generation.</param>
         /// <param name="privA">Private client's key.</param>
         /// <param name="salt">Client's salt.</param>
-        /// <param name="identity">Client's identity.</param>
         /// <param name="password">Client's password.</param>
         /// <returns>Client's public value to send to server.</returns>
         public virtual BigInteger InitAndGenerateCredential(BigInteger N, BigInteger g, IDigest digest, SecureRandom random,
-            BigInteger privA, byte[] salt, byte[] identity, byte[] password)
+            BigInteger privA, byte[] salt, byte[] password)
         {
             this.N = N;
             this.g = g;
             this.digest = digest;
             this.random = random;
-            this.x = ProtonSRPUtilities.CalculateX(digest, N, salt, identity, password);
+            this.x = ProtonSRPUtilities.CalculateX(digest, N, salt, password);
             this.privA = privA;
             this.pubA = g.ModPow(privA, N);
             return pubA;
         }
 
         /**
-	     * Generates client's credentials given the client's salt, identity and password
+	     * Generates client's credentials given the client's salt and password. 
+	     * Proton SRP protocol doesn't use UserName(Identity) calculating Verifier.
 	     * @param salt The salt used in the client's verifier.
-	     * @param identity The user's identity (eg. username)
 	     * @param password The user's password
 	     * @return Client's public value to send to server
 	     */
-        public virtual BigInteger GenerateClientCredentials(byte[] salt, byte[] identity, byte[] password)
+        public virtual BigInteger GenerateClientCredentials(byte[] salt, byte[] password)
         {
-            this.x = ProtonSRPUtilities.CalculateX(digest, N, salt, identity, password);
+            this.x = ProtonSRPUtilities.CalculateX(digest, N, salt, password);
             this.privA = SelectPrivateValue();
             this.pubA = g.ModPow(privA, N);
 

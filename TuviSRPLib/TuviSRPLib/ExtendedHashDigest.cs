@@ -4,6 +4,9 @@ using System.Security.Cryptography;
 
 namespace TuviSRPLib
 {
+    /// <summary>
+    /// Extended hash algorithm used in Proton protocol.
+    /// </summary>
     public class ExtendedHashDigest : IDigest
     {
         private byte[] message;
@@ -14,8 +17,17 @@ namespace TuviSRPLib
             Reset();
         }
 
+        /// <summary>
+        /// Return the algorithm name.
+        /// </summary>
         public string AlgorithmName => "ExtendedHash";
 
+        /// <summary>
+        /// Update the message digest with a block of bytes.
+        /// </summary>
+        /// <param name="input">The byte array containing the data.</param>
+        /// <param name="inOff">The offset into the byte array where the data starts.</param>
+        /// <param name="length">the length of the data.</param>
         public void BlockUpdate(byte[] input, int inOff, int length)
         {
             if (input is null)
@@ -38,7 +50,13 @@ namespace TuviSRPLib
             Array.Copy(input, inOff, newMessage, message.Length, length);
             message = newMessage;
         }
-
+        
+        /// <summary>
+        /// Close the digest, producing the final digest value. The doFinal call leaves the digest reset.
+        /// </summary>
+        /// <param name="output">The array the digest is to be copied into.</param>
+        /// <param name="outOff">The offset into the out array the digest is to start at.</param>
+        /// <returns>Digest length.</returns>
         public int DoFinal(byte[] output, int outOff)
         {
             if (output is null)
@@ -51,7 +69,7 @@ namespace TuviSRPLib
                 throw new ArgumentOutOfRangeException(nameof(outOff), "Parameter inOff can not be negative.");
             }
 
-            var result = ExpandHash(message); // Was MyBCrypt.Generate(message, salt, cost);
+            var result = ExpandHash(message); 
             Array.Copy(result, 0, output, outOff, result.Length);
 
             Reset();
@@ -74,6 +92,10 @@ namespace TuviSRPLib
             message = new byte[0];
         }
 
+        /// <summary>
+        /// Update the message digest with a single byte.
+        /// </summary>
+        /// <param name="input">Updating byte.</param>
         public void Update(byte input)
         {
             byte[] newMessage = new byte[message.Length + 1];

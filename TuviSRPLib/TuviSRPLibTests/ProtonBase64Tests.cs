@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace TuviSRPLibTests
 {
-    internal class ProtonBase64Tests
+    public class ProtonBase64Tests
     {
         [TestCase(new byte[] { 0, 1 })]
         [TestCase(new byte[] { 255, 255 })]

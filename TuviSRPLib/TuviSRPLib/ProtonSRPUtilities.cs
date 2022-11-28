@@ -10,10 +10,14 @@ using ProtonBase64Lib;
 
 namespace TuviSRPLib
 {
-    public class ProtonSRPUtilities
+    /// <summary>
+    /// Implements the utilities (calculations) used for SRP protocol proton edition. Based on the BouncyCastle lib
+    /// https://github.com/bcgit/bc-csharp/blob/master/crypto/src/crypto/agreement/srp/SRP6Utilities.cs
+    /// Proton SRP protocol doesn't use UserName(Identity) calculating Verifier.
+    /// </summary>
+    public static class ProtonSRPUtilities
     {
-        private const string proton = "proton";
-        private const int cost = 10;
+        private const int cost = 10; // it shows how many reps(cycles) bcrypt will do during calculations (2^cost times)
 
         /// <summary>
         /// Calculates value of multiplier K.
@@ -42,22 +46,22 @@ namespace TuviSRPLib
 
         /// <summary>
         /// Calculates parameter X or HashedPassword in Proton realization.
+        /// Proton SRP protocol doesn't use UserName(Identity) calculating Verifier.
         /// </summary>
         /// <param name="digest">Digest (hash algorithm).</param>
         /// <param name="N">Field order.</param>
         /// <param name="salt">Salt.</param>
-        /// <param name="identity">Client's identity (User name).</param>
         /// <param name="password">Password.</param>
         /// <returns>X value.</returns>
-        public static BigInteger CalculateX(IDigest digest, BigInteger N, byte[] salt, byte[] identity, byte[] password)
+        public static BigInteger CalculateX(IDigest digest, BigInteger N, byte[] salt, byte[] password)
         {
             int paddedLength = (N.BitLength + 7) / 8;
             byte[] output = new byte[digest.GetDigestSize()];
             Encoding enc = Encoding.UTF8;
-            byte[] byteProton = enc.GetBytes(proton);
-            var extSalt = Append(salt, byteProton);
+            byte[] byteProton = enc.GetBytes("proton"); // Proton protocol appends (salt + "proton") before calculation
+            var extSalt = Append(salt, byteProton); // Function hashPasswordVersion3, file https://github.com/ProtonMail/go-srp/blob/master/hash.go, row 111
 
-            var newPassword = Append(password, new byte[] { 0 });
+            var newPassword = Append(password, new byte[] { 0 }); // Function HashBytes, file https://github.com/ProtonMail/bcrypt/blob/master/bcrypt.go, row 173
 
             var hashedPassword = BCrypt.Generate(newPassword, extSalt, cost);
 
@@ -80,8 +84,10 @@ namespace TuviSRPLib
         /// <returns>Byte sequence.</returns>
         private static byte[] FormMessage(byte[] extSalt, byte[] hashedPassword)
         {
-            //TODO: create dynamic prefix according to proton realization
-            byte[] prefix = new byte[] { 36, 50, 121, 36, 49, 48, 36 }; // "$2y$10$
+            // TODO: create dynamic prefix according to proton realization?
+            // Function build_bcrypt_str in https://github.com/ProtonMail/bcrypt/blob/master/bcrypt.go
+            // creates prefix before salt. But in all visible cases only "$2y$10$" prefix is used:
+            byte[] prefix = new byte[] { 36, 50, 121, 36, 49, 48, 36 }; // "$2y$10$"
             
             var addSalt = ProtonBase64.Encode(extSalt);
 
@@ -94,17 +100,17 @@ namespace TuviSRPLib
 
         /// <summary>
         /// Calculates verifier V.
+        /// Proton SRP protocol doesn't use UserName(Identity) calculating Verifier.
         /// </summary>
         /// <param name="digest">Digest (hash algorithm).</param>
         /// <param name="N">Field order.</param>
         /// <param name="g">Field generator.</param>
         /// <param name="salt">Salt.</param>
-        /// <param name="identity">Client's identity (User name).</param>
         /// <param name="password">Password.</param>
         /// <returns>Verifier value.</returns>
-        public static BigInteger CalculateVerifier(IDigest digest, BigInteger N, BigInteger g, byte[] salt, byte[] identity, byte[] password)
+        public static BigInteger CalculateVerifier(IDigest digest, BigInteger N, BigInteger g, byte[] salt, byte[] password)
         {
-            var x = CalculateX(digest, N, salt, identity, password);
+            var x = CalculateX(digest, N, salt, password);
             return g.ModPow(x, N);
         }
 

@@ -6,11 +6,10 @@ using Org.BouncyCastle.Security;
 
 namespace TuviSRPLib
 {
-    /**
-	 * Implements the server side SRP-6a protocol. Note that this class is stateful, and therefore NOT threadsafe.
-	 * This implementation of SRP is based on the optimized message sequence put forth by Thomas Wu in the paper
-	 * "SRP-6: Improvements and Refinements to the Secure Remote Password Protocol, 2002"
-	 */
+    /// <summary>
+    /// Implements the server side of SRP protocol used in Proton realization with all changes. Based on the BouncyCastle lib
+    /// https://github.com/bcgit/bc-csharp/blob/master/crypto/src/crypto/agreement/srp/SRP6Server.cs
+    /// </summary>
     public class ProtonSRPServer
     {
         protected BigInteger N;

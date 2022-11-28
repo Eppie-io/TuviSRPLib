@@ -1,16 +1,16 @@
 ﻿using Org.BouncyCastle.Math;
-using Org.BouncyCastle.Utilities;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace TuviSRPLib
 {
+    /// <summary>
+    /// Extra functions to work with BounceCastle BigInteger.
+    /// </summary>
     public static class BCBigIntExtension
     {
         /// <summary>
-        /// Converting BC.BigInteger into byte array with low-endian format.
+        /// Converting BC.BigInteger into a byte array with low-endian format.
         /// </summary>
         /// <param name="number">BigInteger number.</param>
         /// <returns>Byte array with big-endian format.</returns>
@@ -20,7 +20,7 @@ namespace TuviSRPLib
         }
 
         /// <summary>
-        /// Converting BC.BigInteger into N-byte array with low-endian format. Default N = 256.
+        /// Converting BC.BigInteger into the N-byte array with low-endian format. Default N = 256.
         /// </summary>
         /// <param name="number">BigInt number.</param>
         /// <param name="N">Amount of bytes.</param>
@@ -30,7 +30,7 @@ namespace TuviSRPLib
             byte[] bytes = new byte[N];
             byte[] numberBytes = number.ToByteArrayUnsigned();
 
-            for (int i = 0; i < numberBytes.Length; i++)
+            for (int i = 0; i < Math.Min(numberBytes.Length, N); i++)
             {
                 bytes[i] = numberBytes[numberBytes.Length - 1 - i];
             }

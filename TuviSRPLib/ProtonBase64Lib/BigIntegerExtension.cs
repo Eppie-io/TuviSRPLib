@@ -6,7 +6,7 @@ using System.Text;
 namespace ProtonBase64Lib
 {
     /// <summary>
-    /// Extra function to work with BigInteger.
+    /// Extra functions to work with BigInteger.
     /// </summary>
     public static class BigIntegerExtension
     {
