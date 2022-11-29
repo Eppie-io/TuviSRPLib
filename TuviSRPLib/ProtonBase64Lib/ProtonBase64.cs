@@ -15,8 +15,8 @@ namespace ProtonBase64Lib
         /// So, to calculate size of this sequences we need following parameters:
         /// </summary>
         private const int BaseValue = 64;
-        private const int EightBitsSize = 8; // byte size
-        private const int SixBitsSize = 6; // log2(64)
+        private const int SourceElementBitSize = 8; // byte size
+        private const int TargetElementBitSize = 6; // log2(64) - size of Base64 chunks
         private const string ProtonBase64Dictionary = "./ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
         /// <summary>
@@ -112,8 +112,8 @@ namespace ProtonBase64Lib
                 throw new ArgumentException("Array should contain at least 1 element.");
             }
 
-            int remainder = array.Length * EightBitsSize % SixBitsSize;
-            int size = remainder == 0 ? array.Length * EightBitsSize / SixBitsSize : array.Length * EightBitsSize / SixBitsSize + 1;
+            int remainder = array.Length * SourceElementBitSize % TargetElementBitSize;
+            int size = remainder == 0 ? array.Length * SourceElementBitSize / TargetElementBitSize : array.Length * SourceElementBitSize / TargetElementBitSize + 1;
             
             int currentPosition = size - 1;
             byte[] result = new byte[size];
@@ -122,14 +122,14 @@ namespace ProtonBase64Lib
 
             if (remainder != 0)
             {
-                bitSequence = bitSequence << (SixBitsSize - remainder);
+                bitSequence = bitSequence << (TargetElementBitSize - remainder);
             }
 
             while (bitSequence != 0 && currentPosition >= 0)
             {
                 byte lastSixBits = (byte)(bitSequence & (BaseValue - 1));
                 result[currentPosition] = lastSixBits;
-                bitSequence = bitSequence >> SixBitsSize;
+                bitSequence = bitSequence >> TargetElementBitSize;
                 currentPosition--;
             }
 
@@ -149,7 +149,7 @@ namespace ProtonBase64Lib
             }
 
             BigInteger number = 0;
-            int size = array.Length * SixBitsSize / EightBitsSize;
+            int size = array.Length * TargetElementBitSize / SourceElementBitSize;
             byte[] resultArray = new byte[size];
             for (int i = 0; i < array.Length; i++)
             {
@@ -158,11 +158,11 @@ namespace ProtonBase64Lib
                     throw new ArgumentOutOfRangeException(nameof(array),
                         $"Array at index {i} has wrong value. Allowed values are from 0 to {BaseValue - 1}.");
                 }
-                number = number << SixBitsSize;
+                number = number << TargetElementBitSize;
                 number |= array[i];
             }
 
-            int remainder = array.Length * SixBitsSize % EightBitsSize;
+            int remainder = array.Length * TargetElementBitSize % SourceElementBitSize;
 
             number = number >> remainder; //return to original size
 

@@ -52,7 +52,7 @@ namespace TuviSRPLibTests
         }
 
         [Test]
-        public void ClientSideWorkTest()
+        public void ClientSideWorkWithSpecificRandomTest()
         {
             //pubB
             string testServerEphemeral = "l13IQSVFBEV0ZZREuRQ4ZgP6OpGiIfIjbSDYQG3Yp39FkT2B/k3n1ZhwqrAdy+qvPPFq/le0b7UDtayoX4aOTJihoRvifas8Hr3icd9nAHqd0TUBbkZkT6Iy6UpzmirCXQtEhvGQIdOLuwvy+vZWh24G2ahBM75dAqwkP961EJMh67/I5PA5hJdQZjdPT5luCyVa7BS1d9ZdmuR0/VCjUOdJbYjgtIH7BQoZs+KacjhUN8gybu+fsycvTK3eC+9mCN2Y6GdsuCMuR3pFB0RF9eKae7cA6RbJfF1bjm0nNfWLXzgKguKBOeF3GEAsnCgK68q82/pq9etiUDizUlUBcA==";
@@ -72,7 +72,7 @@ namespace TuviSRPLibTests
             //N and g
             var encodedN = "W2z5HBi8RvsfYzZTS7qBaUxxPhsfHJFZpu3Kd6s1JafNrCCH9rfvPLrfuqocxWPgWDH2R8neK7PkNvjxto9TStuY5z7jAzWRvFWN9cQhAKkdWgy0JY6ywVn22+HFpF4cYesHrqFIKUPDMSSIlWjBVmEJZ/MusD44ZT29xcPrOqeZvwtCffKtGAIjLYPZIEbZKnDM1Dm3q2K/xS5h+xdhjnndhsrkwm9U9oyA2wxzSXFL+pdfj2fOdRwuR5nW0J2NFrq3kJjkRmpO/Genq1UW+TEknIWAb6VzJJJA244K/H8cnSx2+nSNZO3bbo6Ys228ruV9A8m6DhxmS+bihN3ttQ==";
             var decodedN = Base64.Decode(encodedN);
-            BigInteger N = new BigInteger(1, decodedN.Reverse().ToArray());            
+            BigInteger N = new BigInteger(1, decodedN.Reverse().ToArray());
             BigInteger g = new BigInteger("2");
 
             //Digest
@@ -82,17 +82,16 @@ namespace TuviSRPLibTests
             //string identity = "jakubqa"; Proton SRP protocol doesn't use UserName(Identity) calculating Verifier
             string password = "abc123";
             string salt = "yKlc5/CvObfoiw==";
-            string prA = "10547061652029274211379670715837497191923711392100181473801853905808809915196907607203711902581702530909229913139029064200053653545356956180378507124271109459013112604023928943361222711612802880534999338627841076012785708089125889096845658736374227261674415889530408226129007272971994571573711799978768722905740355338656395674139700290418014119543614116447579043620139396281282725306429481228395234306648949282792144922413465416627055298443842406176782173942480534905749407414063778620271297106813842950024831635672697955431839334459563366906834842208162136118219911675083220520501587197458892001573436641639539315377";
-            BigInteger privA = new BigInteger(prA);
-            
+
             Encoding enc = Encoding.UTF8;
             byte[] passwordBytes = enc.GetBytes(password);
             byte[] saltBytes = Base64.Decode(salt);
 
             //Client creation
             ProtonSRPClient client = new ProtonSRPClient();
+            client.Init(N, g, digest, new MyUnsecureRandom());
+            client.GenerateClientCredentials(saltBytes,passwordBytes);
 
-            client.InitAndGenerateCredential(N, g, digest, new SecureRandom(), privA, saltBytes, /*identityBytes,*/ passwordBytes);
             client.CalculateSecret(pubB);
 
             BigInteger M1 = client.CalculateClientEvidenceMessage();
