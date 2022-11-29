@@ -59,6 +59,13 @@ namespace TuviSRPLib
             Init(group.N, group.G, digest, random);
         }
 
+        public virtual void Init(string base64N, BigInteger g, IDigest digest, SecureRandom random)
+        {
+            var decodedBase64N = Base64.Decode(base64N);
+            BigInteger N = new BigInteger(1, decodedBase64N.Reverse().ToArray());
+            Init(N, g, digest, random);
+        }
+
         public virtual void SimpleInit(string base64N)
         {
             var decodedBase64N = Base64.Decode(base64N);
@@ -109,6 +116,14 @@ namespace TuviSRPLib
             this.S = CalculateS();
 
             return S;
+        }
+
+        public virtual BigInteger CalculateSecret(string serverB)
+        {
+            var decodedPubB = Base64.Decode(serverB);
+            BigInteger pubB = new BigInteger(1, decodedPubB.Reverse().ToArray());
+
+            return CalculateSecret(pubB);
         }
 
         protected virtual BigInteger SelectPrivateValue()
@@ -174,6 +189,14 @@ namespace TuviSRPLib
                 return true;
             }
             return false;
+        }
+
+        public virtual bool VerifyServerEvidenceMessage(string serverM2)
+        {
+            var decodedExpectedM2 = Base64.Decode(serverM2);
+            BigInteger M2 = new BigInteger(1, decodedExpectedM2.Reverse().ToArray());
+
+            return VerifyServerEvidenceMessage(M2);
         }
 
         /**
