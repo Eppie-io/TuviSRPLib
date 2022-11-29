@@ -1,8 +1,9 @@
 ﻿using Org.BouncyCastle.Math;
+using Org.BouncyCastle.Utilities.Encoders;
 using System;
 using System.Linq;
 
-namespace TuviSRPLib
+namespace TuviSRPLib.Utils
 {
     /// <summary>
     /// Extra functions to work with BounceCastle BigInteger.
@@ -36,6 +37,17 @@ namespace TuviSRPLib
             }
 
             return bytes;
+        }
+
+        /// <summary>
+        /// Converting BC.BigInteger into Base64 string.
+        /// </summary>
+        /// <param name="number">BigInt number.</param>
+        /// <returns>Base64 string.</returns>
+        public static string ToBase64(this BigInteger number)
+        {
+            byte[] bytes = number.ToLowEndianByteArray();
+            return Base64.ToBase64String(bytes);
         }
     }
 }

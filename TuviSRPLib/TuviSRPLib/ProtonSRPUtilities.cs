@@ -7,6 +7,7 @@ using Org.BouncyCastle.Math;
 using Org.BouncyCastle.Security;
 using Org.BouncyCastle.Utilities;
 using ProtonBase64Lib;
+using TuviSRPLib.Utils;
 
 namespace TuviSRPLib
 {

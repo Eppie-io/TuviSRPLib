@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Linq;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Math;
 using Org.BouncyCastle.Security;
+using Org.BouncyCastle.Utilities.Encoders;
 
 namespace TuviSRPLib
 {
@@ -55,6 +57,14 @@ namespace TuviSRPLib
         public virtual void Init(Srp6GroupParameters group, BigInteger v, IDigest digest, SecureRandom random)
         {
             Init(group.N, group.G, v, digest, random);
+        }
+
+        public virtual void SimpleInit(string base64N, BigInteger v)
+        {
+            var decodedBase64N = Base64.Decode(base64N);
+            BigInteger N = new BigInteger(1, decodedBase64N.Reverse().ToArray());
+            BigInteger g = new BigInteger("2");
+            Init(N, g, v, new ExtendedHashDigest(), new SecureRandom());
         }
 
         /**

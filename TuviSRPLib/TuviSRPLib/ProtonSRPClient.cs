@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Text;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Math;
@@ -57,30 +59,19 @@ namespace TuviSRPLib
             Init(group.N, group.G, digest, random);
         }
 
-        /// <summary>
-        /// Initialises the client to begin new authentication attempt 
-        /// and generates client's credentials given the client's private key, salt and password.
-        /// Proton SRP protocol doesn't use UserName(Identity) calculating Verifier.
-        /// </summary>
-        /// <param name="N">The safe prime associated with the client's verifier.</param>
-        /// <param name="g">The group generator (always 2 for proton) associated with the client's verifier.</param>
-        /// <param name="digest">The digest algorithm associated with the client's verifier.</param>
-        /// <param name="random">Random for key generation.</param>
-        /// <param name="privA">Private client's key.</param>
-        /// <param name="salt">Client's salt.</param>
-        /// <param name="password">Client's password.</param>
-        /// <returns>Client's public value to send to server.</returns>
-        public virtual BigInteger InitAndGenerateCredential(BigInteger N, BigInteger g, IDigest digest, SecureRandom random,
-            BigInteger privA, byte[] salt, byte[] password)
+        public virtual void Init(string base64N, BigInteger g, IDigest digest, SecureRandom random)
         {
-            this.N = N;
-            this.g = g;
-            this.digest = digest;
-            this.random = random;
-            this.x = ProtonSRPUtilities.CalculateX(digest, N, salt, password);
-            this.privA = privA;
-            this.pubA = g.ModPow(privA, N);
-            return pubA;
+            var decodedBase64N = Base64.Decode(base64N);
+            BigInteger N = new BigInteger(1, decodedBase64N.Reverse().ToArray());
+            Init(N, g, digest, random);
+        }
+
+        public virtual void SimpleInit(string base64N)
+        {
+            var decodedBase64N = Base64.Decode(base64N);
+            BigInteger N = new BigInteger(1, decodedBase64N.Reverse().ToArray());
+            BigInteger g = new BigInteger("2");
+            Init(N, g, new ExtendedHashDigest(), new SecureRandom());
         }
 
         /**
@@ -93,6 +84,19 @@ namespace TuviSRPLib
         public virtual BigInteger GenerateClientCredentials(byte[] salt, byte[] password)
         {
             this.x = ProtonSRPUtilities.CalculateX(digest, N, salt, password);
+            this.privA = SelectPrivateValue();
+            this.pubA = g.ModPow(privA, N);
+
+            return pubA;
+        }
+
+        public virtual BigInteger GenerateClientCredentials(string base64Salt, string password)
+        {
+            byte[] saltBytes = Base64.Decode(base64Salt);
+            Encoding enc = Encoding.UTF8;
+            byte[] passwordBytes = enc.GetBytes(password);
+
+            this.x = ProtonSRPUtilities.CalculateX(digest, N, saltBytes, passwordBytes);
             this.privA = SelectPrivateValue();
             this.pubA = g.ModPow(privA, N);
 
@@ -112,6 +116,14 @@ namespace TuviSRPLib
             this.S = CalculateS();
 
             return S;
+        }
+
+        public virtual BigInteger CalculateSecret(string serverB)
+        {
+            var decodedPubB = Base64.Decode(serverB);
+            BigInteger pubB = new BigInteger(1, decodedPubB.Reverse().ToArray());
+
+            return CalculateSecret(pubB);
         }
 
         protected virtual BigInteger SelectPrivateValue()
@@ -177,6 +189,14 @@ namespace TuviSRPLib
                 return true;
             }
             return false;
+        }
+
+        public virtual bool VerifyServerEvidenceMessage(string serverM2)
+        {
+            var decodedExpectedM2 = Base64.Decode(serverM2);
+            BigInteger M2 = new BigInteger(1, decodedExpectedM2.Reverse().ToArray());
+
+            return VerifyServerEvidenceMessage(M2);
         }
 
         /**
