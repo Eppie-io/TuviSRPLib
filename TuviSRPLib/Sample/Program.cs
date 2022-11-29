@@ -5,6 +5,7 @@ using Org.BouncyCastle.Utilities.Encoders;
 using System.Text;
 using System.Text.Json;
 using TuviSRPLib;
+using TuviSRPLib.Utils;
 
 namespace Sample
 {
