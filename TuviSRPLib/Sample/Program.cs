@@ -1,9 +1,4 @@
-﻿using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Math;
-using Org.BouncyCastle.Security;
-using Org.BouncyCastle.Utilities.Encoders;
-using System.Text;
-using System.Text.Json;
+﻿using System.Text.Json;
 using TuviSRPLib;
 using TuviSRPLib.Utils;
 
@@ -56,7 +51,7 @@ namespace Tuvi.Sample
             {
                 ParseArgs();
 
-                if(string.IsNullOrEmpty(_jsonFile))
+                if (string.IsNullOrEmpty(_jsonFile))
                 {
                     throw new Exception("""json file is required [command line: -json "path"]""");
                 }
@@ -143,10 +138,7 @@ namespace Tuvi.Sample
 
             var proof = srpClient.CalculateClientEvidenceMessage();
 
-            var clientEphemeral = Base64.ToBase64String(ephemeral.ToLowEndianByteArray());
-            var clientProof = Base64.ToBase64String(proof.ToLowEndianByteArray());
-
-            return (clientEphemeral, clientProof);
+            return (ephemeral.ToBase64(), proof.ToBase64());
         }
 
         void WriteLine(string text, ConsoleColor color = ConsoleColor.White)
