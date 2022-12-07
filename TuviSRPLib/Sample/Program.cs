@@ -40,7 +40,6 @@ namespace Tuvi.Sample
 
     public class Program
     {
-        ProtonSRPClient _client = new ProtonSRPClient();
         string _password = string.Empty;
         string _jsonFile = string.Empty;
         Response? _data = null;
@@ -76,6 +75,7 @@ namespace Tuvi.Sample
                 ParseJson(json);
 
                 var (clientEphemeral, clientProof) = Calculate(_data ?? throw new Exception("data is not found"));
+
                 var result = Print(clientEphemeral, clientProof);
 
                 WriteLine($"""
@@ -135,35 +135,18 @@ namespace Tuvi.Sample
 
         (string clientEphemeral, string clientProof) Calculate(Response data)
         {
-            InitSRPClient(data);
+            ProtonSRPClient srpClient = new ProtonSRPClient();
+            srpClient.SimpleInit(data.GetModulusData());
 
-            Encoding enc = Encoding.UTF8;
-            byte[] passwordBytes = enc.GetBytes(_password);
-            byte[] saltBytes = Base64.Decode(data.Salt);
+            var ephemeral = srpClient.GenerateClientCredentials(data.Salt, _password);
+            srpClient.CalculateSecret(data.ServerEphemeral);
 
-            var decodedServerEphemeral = Base64.Decode(data.ServerEphemeral);
-            BigInteger pubB = new BigInteger(1, decodedServerEphemeral.Reverse().ToArray());
-
-            var ephemeral = _client.GenerateClientCredentials(saltBytes, passwordBytes);
-            _client.CalculateSecret(pubB);
-            var proof = _client.CalculateClientEvidenceMessage();
-
+            var proof = srpClient.CalculateClientEvidenceMessage();
 
             var clientEphemeral = Base64.ToBase64String(ephemeral.ToLowEndianByteArray());
             var clientProof = Base64.ToBase64String(proof.ToLowEndianByteArray());
 
             return (clientEphemeral, clientProof);
-        }
-
-        void InitSRPClient(Response data)
-        {
-            BigInteger g = new BigInteger("2");
-            IDigest digest = new ExtendedHashDigest();
-
-            var decodedModulus = Base64.Decode(data.GetModulusData());
-            BigInteger N = new BigInteger(1, decodedModulus.Reverse().ToArray());
-
-            _client.Init(N, g, digest, new SecureRandom());
         }
 
         void WriteLine(string text, ConsoleColor color = ConsoleColor.White)
