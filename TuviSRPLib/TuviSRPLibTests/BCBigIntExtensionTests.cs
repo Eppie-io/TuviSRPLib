@@ -12,7 +12,7 @@ namespace TuviSRPLibTests
         {
             BigInteger number = new BigInteger(1, initialArray);
             var actualResult = number.ToLowEndianByteArray();
-            Assert.AreEqual(expectedArray, actualResult);
+            Assert.That(actualResult, Is.EqualTo(expectedArray));
         }
 
         [TestCase(new byte[] { 1, 2, 3, 4, 5 }, 5, new byte[] { 5, 4, 3, 2, 1, })]
@@ -23,7 +23,7 @@ namespace TuviSRPLibTests
         {
             BigInteger number = new BigInteger(1, initialArray);
             var actualResult = number.ToLowEndianNByteArray(N);
-            Assert.AreEqual(expectedArray, actualResult);
+            Assert.That(actualResult, Is.EqualTo(expectedArray));
         }
 
         [TestCase(new byte[] { 2 }, new byte[] { 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 })]
@@ -32,7 +32,7 @@ namespace TuviSRPLibTests
         {
             BigInteger number = new BigInteger(1, initialArray);
             var actualResult = number.ToLowEndianNByteArray();
-            Assert.AreEqual(expectedArray, actualResult);
+            Assert.That(actualResult, Is.EqualTo(expectedArray));
         }
 
         [TestCase("yKlc5/CvObfoiw==")]
@@ -43,7 +43,7 @@ namespace TuviSRPLibTests
             var decodedBase64Number = Base64.Decode(base64Number);
             BigInteger number = new BigInteger(1, decodedBase64Number.Reverse().ToArray());
             var actualResult = number.ToBase64();
-            Assert.AreEqual(base64Number, actualResult);
+            Assert.That(actualResult, Is.EqualTo(base64Number));
         }
     }
 }

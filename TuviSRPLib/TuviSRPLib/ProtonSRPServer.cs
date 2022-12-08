@@ -61,6 +61,11 @@ namespace TuviSRPLib
 
         public virtual void SimpleInit(string base64N, BigInteger v)
         {
+            if (string.IsNullOrEmpty(base64N))
+            {
+                throw new ArgumentException("Parameter can not be null or empty", nameof(base64N));
+            }
+
             var decodedBase64N = Base64.Decode(base64N);
             BigInteger N = new BigInteger(1, decodedBase64N.Reverse().ToArray());
             BigInteger g = new BigInteger("2");
