@@ -49,7 +49,7 @@ namespace TuviSRPLibTests
             BigInteger clientKey = client.CalculateSessionKey();
             BigInteger serverKey = server.CalculateSessionKey();
 
-            Assert.AreEqual(clientKey, serverKey);
+            Assert.That(serverKey, Is.EqualTo(clientKey));
         }
 
         [Test]
@@ -96,7 +96,7 @@ namespace TuviSRPLibTests
             client.CalculateSecret(pubB);
 
             BigInteger M1 = client.CalculateClientEvidenceMessage();
-            Assert.AreEqual(expectedM1, M1);
+            Assert.That(M1, Is.EqualTo(expectedM1));
 
             Assert.IsTrue(client.VerifyServerEvidenceMessage(expectedM2), "Message M2 is not verified.");
         }
@@ -133,7 +133,7 @@ namespace TuviSRPLibTests
             client.CalculateSecret(testServerEphemeral);
 
             BigInteger M1 = client.CalculateClientEvidenceMessage();
-            Assert.AreEqual(testClientProof, M1.ToBase64());
+            Assert.That(M1.ToBase64(), Is.EqualTo(testClientProof));
 
             Assert.IsTrue(client.VerifyServerEvidenceMessage(testServerProof), "Message M2 is not verified.");
         }

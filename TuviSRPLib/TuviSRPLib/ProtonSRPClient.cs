@@ -61,6 +61,11 @@ namespace TuviSRPLib
 
         public virtual void Init(string base64N, BigInteger g, IDigest digest, SecureRandom random)
         {
+            if (string.IsNullOrEmpty(base64N))
+            {
+                throw new ArgumentException("Parameter can not be null or empty", nameof(base64N));
+            }
+
             var decodedBase64N = Base64.Decode(base64N);
             BigInteger N = new BigInteger(1, decodedBase64N.Reverse().ToArray());
             Init(N, g, digest, random);
@@ -68,6 +73,11 @@ namespace TuviSRPLib
 
         public virtual void SimpleInit(string base64N)
         {
+            if (string.IsNullOrEmpty(base64N))
+            {
+                throw new ArgumentException("Parameter can not be null or empty", nameof(base64N));
+            }
+
             var decodedBase64N = Base64.Decode(base64N);
             BigInteger N = new BigInteger(1, decodedBase64N.Reverse().ToArray());
             BigInteger g = new BigInteger("2");
@@ -83,6 +93,16 @@ namespace TuviSRPLib
 	     */
         public virtual BigInteger GenerateClientCredentials(byte[] salt, byte[] password)
         {
+            if (salt is null)
+            {
+                throw new ArgumentNullException(nameof(salt));
+            }
+
+            if (password is null)
+            {
+                throw new ArgumentNullException(nameof(password));
+            }
+
             this.x = ProtonSRPUtilities.CalculateX(digest, N, salt, password);
             this.privA = SelectPrivateValue();
             this.pubA = g.ModPow(privA, N);
@@ -92,6 +112,16 @@ namespace TuviSRPLib
 
         public virtual BigInteger GenerateClientCredentials(string base64Salt, string password)
         {
+            if (string.IsNullOrEmpty(base64Salt))
+            {
+                throw new ArgumentException("Salt can not be null or empty", nameof(base64Salt));
+            }
+
+            if (string.IsNullOrEmpty(password))
+            {
+                throw new ArgumentException("Password can not be null or empty", nameof(password));
+            }
+
             byte[] saltBytes = Base64.Decode(base64Salt);
             Encoding enc = Encoding.UTF8;
             byte[] passwordBytes = enc.GetBytes(password);
@@ -120,6 +150,11 @@ namespace TuviSRPLib
 
         public virtual BigInteger CalculateSecret(string serverB)
         {
+            if (string.IsNullOrEmpty(serverB))
+            {
+                throw new ArgumentException("Server public key can not be null or empty", nameof(serverB));
+            }
+
             var decodedPubB = Base64.Decode(serverB);
             BigInteger pubB = new BigInteger(1, decodedPubB.Reverse().ToArray());
 
@@ -193,6 +228,11 @@ namespace TuviSRPLib
 
         public virtual bool VerifyServerEvidenceMessage(string serverM2)
         {
+            if (string.IsNullOrEmpty(serverM2))
+            {
+                throw new ArgumentException("Server verification message can not be null or empty", nameof(serverM2));
+            }
+
             var decodedExpectedM2 = Base64.Decode(serverM2);
             BigInteger M2 = new BigInteger(1, decodedExpectedM2.Reverse().ToArray());
 

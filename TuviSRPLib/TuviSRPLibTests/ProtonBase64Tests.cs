@@ -24,7 +24,7 @@ namespace TuviSRPLibTests
         public void BytesToStringAndToBytes_CorrectConverting(byte[] array)
         {
             var actualResult = ProtonBase64.Decode(ProtonBase64.ToBase64String(array));
-            Assert.AreEqual(array, actualResult);
+            Assert.That(actualResult, Is.EqualTo(array));
         }
 
         [TestCase(new byte[] { 0, 0, 1 }, ".../")]
@@ -35,7 +35,7 @@ namespace TuviSRPLibTests
         public void BytesToBase64String_CorrectConverting(byte[] array, string expectedResult)
         {
             var actualResult = ProtonBase64.ToBase64String(array);
-            Assert.AreEqual(expectedResult, actualResult);
+            Assert.That(actualResult, Is.EqualTo(expectedResult));
         }
     }
 }
