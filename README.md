@@ -1,13 +1,11 @@
 # TuviSRPLib
-TuviSRPLib realizes specific SRP protocol that is used in ProtonMail. Also this library imitates behavior of server and client side.
-Realization is based on BounceCastle realization of SRP-6 protocol (https://github.com/bcgit/bc-csharp/tree/master/crypto/src/crypto/agreement/srp)
-with appropriate protocol changes
+TuviSRPLib is a C# port of a custom implementation of SRP protocol used by ProtonMail. The port is based on [BounceCastle implementation of SRP-6] (https://github.com/bcgit/bc-csharp/tree/master/crypto/src/crypto/agreement/srp) with appropriate changes. This library also provides classes to emulate server and client side behavior for testing.
 
-TuviSRPLib contains following main classes:
-- ProtonSRPServer - imitates server side;
-- ProtonSRPClient - imitates client side;
-- ProtonSRPUtilities - contains main calculations;
-- ExtendedHashDigest - realization of hash algorithm that used in Proton realization.
+TuviSRPLib contains the following main classes:
+- ProtonSRPServer — server side emulation;
+- ProtonSRPClient — imitates client side emulation;
+- ProtonSRPUtilities — main calculations;
+- ExtendedHashDigest — an implementation of hash algorithm used by Proton.
 
 To use this library and imitate interaction between server and client follow next example:
 
