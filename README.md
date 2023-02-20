@@ -1,5 +1,5 @@
 # TuviSRPLib
-TuviSRPLib is a C# port of a custom implementation of SRP protocol used by ProtonMail. The port is based on [BounceCastle implementation of SRP-6] (https://github.com/bcgit/bc-csharp/tree/master/crypto/src/crypto/agreement/srp) with appropriate changes. This library also provides classes to emulate server and client side behavior for testing.
+TuviSRPLib is a C# port of a custom implementation of SRP protocol used by ProtonMail. The port is based on [BounceCastle implementation of SRP-6](https://github.com/bcgit/bc-csharp/tree/master/crypto/src/crypto/agreement/srp) with appropriate changes. This library also provides classes to emulate server and client side behavior for testing.
 
 TuviSRPLib contains the following main classes:
 - ProtonSRPServer — server side emulation;
