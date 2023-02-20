@@ -10,7 +10,7 @@ TuviSRPLib contains the following main classes:
 To use this library and imitate interaction between server and client follow next example:
 
 ```
-	BigInteger N = new BigInteger(1, byteArray); // group order - any big prime number you want to use
+    BigInteger N = new BigInteger(1, byteArray); // group order - any big prime number you want to use
     BigInteger g = new BigInteger("2"); // group generator - always equals 2 in Proton realization
     
     string password = "qwerty"; // any password
@@ -20,19 +20,19 @@ To use this library and imitate interaction between server and client follow nex
     byte[] passwordBytes = enc.GetBytes(password);
     byte[] saltBytes = enc.GetBytes(salt);
 
-	// Sides creation
+    // Sides creation
     ProtonSRPClient client = new ProtonSRPClient();
     ProtonSRPServer server = new ProtonSRPServer();
     IDigest digest = new ExtendedHashDigest();
 
-	// Verifier creation
+    // Verifier creation
     var verifier = ProtonSRPUtilities.CalculateVerifier(digest, N, g, saltBytes, passwordBytes);
 
-	// Sides initialization
+    // Sides initialization
     server.Init(N, g, verifier, digest, new SecureRandom());
     client.Init(N, g, digest, new SecureRandom());
 
-	// Credential genration for both sides
+    // Credential genration for both sides
     BigInteger pubA = client.GenerateClientCredentials(saltBytes, passwordBytes);
     BigInteger pubB = server.GenerateServerCredentials();
 
@@ -41,14 +41,14 @@ To use this library and imitate interaction between server and client follow nex
 
     BigInteger M1 = client.CalculateClientEvidenceMessage(); // M1 message creation
     
-	if (server.VerifyClientEvidenceMessage(M1)) // M1 message verifying
-	{
-		BigInteger M2 = server.CalculateServerEvidenceMessage(); // M2 message creation
+    if (server.VerifyClientEvidenceMessage(M1)) // M1 message verifying
+    {
+        BigInteger M2 = server.CalculateServerEvidenceMessage(); // M2 message creation
 
-		if (client.VerifyServerEvidenceMessage(M2)) // M2 message verifying
-		{
-			BigInteger clientKey = client.CalculateSessionKey();
-			BigInteger serverKey = server.CalculateSessionKey();
-		}
-	}
+        if (client.VerifyServerEvidenceMessage(M2)) // M2 message verifying
+        {
+            BigInteger clientKey = client.CalculateSessionKey();
+            BigInteger serverKey = server.CalculateSessionKey();
+        }
+    }
 ```
