@@ -9,10 +9,11 @@ namespace TuviSRPLibTests
 {
     internal class ProtonSRPTests
     {
-        [Test]
-        public void FullCycleOfWorkTest()
+        [TestCase("W2z5HBi8RvsfYzZTS7qBaUxxPhsfHJFZpu3Kd6s1JafNrCCH9rfvPLrfuqocxWPgWDH2R8neK7PkNvjxto9TStuY5z7jAzWRvFWN9cQhAKkdWgy0JY6ywVn22+HFpF4cYesHrqFIKUPDMSSIlWjBVmEJZ/MusD44ZT29xcPrOqeZvwtCffKtGAIjLYPZIEbZKnDM1Dm3q2K/xS5h+xdhjnndhsrkwm9U9oyA2wxzSXFL+pdfj2fOdRwuR5nW0J2NFrq3kJjkRmpO/Genq1UW+TEknIWAb6VzJJJA244K/H8cnSx2+nSNZO3bbo6Ys228ruV9A8m6DhxmS+bihN3ttQ==")]
+        [TestCase("S/hBgmVXHlpzUxgzOlt4veE3v3BnpaVyRFUUDMmRgcF2yZU5rQcQYHDBGrnQAlGdcsGmZVcZC51JgJtEB6v5bBpxnnsjg8XibZm0GYXODhm7qki5wM5AEKoTKbZKaKuRD297pPTsVdqUdXFNdkDxk3Q3nv3N6ZEJccCS1IabllN+/adVTjUfCMA9pyJavOOj90fhcCQ2npInsxegvlGvREr1JpobdrtbXAOzLH+9ELxpW91ZFWbN0HHaE8+JV8TsZnhY+W0pqL+x18iVBwOCKjqiNVlXsJsd4PV0fyX3Fb/uRTnUuEYe/98xo+qqG/CrhIW7QgiuwemEN7PdHHARnQ==")]
+        [TestCase("cxppFHJLKpd2WRExtw197XHmR + xd67d45DWyUx8iDAbnyPZolH2jJekfI9n19GVdRPQvwBECs4mLpp6AikuwuPJ / uwzWl3Rqh6ei6QmzC1iBLAQURso7Wxy8AyE + VXLbup119yyj1JaF4KxLXU6E9mzqevPdMqYD1XI19BGHAlZGCCfjTalTyQA4eh0pIcjQmeJ / 8OjfUqx / enRz4ZvuQ8KDn9 + iK8b / +OqH3pQr5s6YDlatQAIStdBPCZd / XbHNaFWrAZix21J / t99mPwKpGfVya1wA6j6LS2XQ / FQYuwQLNm / ZLlMYyNEcbL0CeebRvb8Cpv09u3fXpvs2YC3xjQ ==")]
+        public void FullCycleOfWorkTest(string encodedN)
         {
-            var encodedN = "W2z5HBi8RvsfYzZTS7qBaUxxPhsfHJFZpu3Kd6s1JafNrCCH9rfvPLrfuqocxWPgWDH2R8neK7PkNvjxto9TStuY5z7jAzWRvFWN9cQhAKkdWgy0JY6ywVn22+HFpF4cYesHrqFIKUPDMSSIlWjBVmEJZ/MusD44ZT29xcPrOqeZvwtCffKtGAIjLYPZIEbZKnDM1Dm3q2K/xS5h+xdhjnndhsrkwm9U9oyA2wxzSXFL+pdfj2fOdRwuR5nW0J2NFrq3kJjkRmpO/Genq1UW+TEknIWAb6VzJJJA244K/H8cnSx2+nSNZO3bbo6Ys228ruV9A8m6DhxmS+bihN3ttQ==";
             var decodedN = Base64.Decode(encodedN);
             BigInteger N = new BigInteger(1, decodedN.Reverse().ToArray());
             BigInteger g = new BigInteger("2");
