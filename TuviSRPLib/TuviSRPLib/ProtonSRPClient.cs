@@ -48,6 +48,7 @@ namespace TuviSRPLib
 	     */
         public virtual void Init(BigInteger N, BigInteger g, IDigest digest, SecureRandom random)
         {
+            // According to ProtonMail documentation N size should be 2048 bits.
             int bitSize = 2048;
             int bitInByte = sizeof(byte) * 8;
             int count = bitSize / bitInByte;
