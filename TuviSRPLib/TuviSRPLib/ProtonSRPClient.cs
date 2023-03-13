@@ -48,6 +48,24 @@ namespace TuviSRPLib
 	     */
         public virtual void Init(BigInteger N, BigInteger g, IDigest digest, SecureRandom random)
         {
+            // According to ProtonMail documentation N size should be 2048 bits.
+            int bitSize = 2048;
+            int bitInByte = sizeof(byte) * 8;
+            int count = bitSize / bitInByte;
+
+            byte[] bytes = Enumerable.Repeat(byte.MaxValue, count).ToArray();
+            bytes[0] = 0x7f;
+
+            BigInteger border = new BigInteger(1, bytes);
+
+            // It is necessary but not sufficient verification of N size (2048 bits).
+            // You should be sure that you received N from the server and it has not been changed.
+            string dif = N.Subtract(border).ToString();
+            if (dif[0] == '-')
+            {
+                throw new ArgumentOutOfRangeException(nameof(N), "N should be a 2048-bit number.");
+            }
+
             this.N = N;
             this.g = g;
             this.digest = digest;
