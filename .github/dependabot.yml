@@ -8,7 +8,7 @@ updates:
 
   # Maintain dependencies for NuGet
   - package-ecosystem: "nuget"
-    directory: "/" # Location of package manifests
+    directory: "/TuviSRPLib/" # Location of package manifests
     schedule:
       interval: "daily"
       
