@@ -9,7 +9,7 @@ TuviSRPLib contains the following main classes:
 
 To use this library and imitate interaction between server and client follow next example:
 
-```
+```C#
     BigInteger N = new BigInteger(1, byteArray); // group order - any big prime number you want to use
     BigInteger g = new BigInteger("2"); // group generator - always equals 2 in Proton realization
     
