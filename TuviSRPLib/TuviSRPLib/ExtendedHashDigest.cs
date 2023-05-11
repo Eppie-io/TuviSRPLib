@@ -14,6 +14,7 @@ namespace TuviSRPLib
 
         public ExtendedHashDigest()
         {
+            message = new byte[DigestLength];
             Reset();
         }
 
@@ -27,8 +28,8 @@ namespace TuviSRPLib
         /// </summary>
         /// <param name="input">The byte array containing the data.</param>
         /// <param name="inOff">The offset into the byte array where the data starts.</param>
-        /// <param name="length">the length of the data.</param>
-        public void BlockUpdate(byte[] input, int inOff, int length)
+        /// <param name="inLen">the length of the data.</param>
+        public void BlockUpdate(byte[] input, int inOff, int inLen)
         {
             if (input is null)
             {
@@ -40,17 +41,17 @@ namespace TuviSRPLib
                 throw new ArgumentOutOfRangeException(nameof(inOff), "Parameter inOff can not be negative.");
             }
 
-            if (length < 0)
+            if (inLen < 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(length), "Parameter length can not be negative.");
+                throw new ArgumentOutOfRangeException(nameof(inLen), "Parameter length can not be negative.");
             }
 
-            byte[] newMessage = new byte[message.Length + length];
+            byte[] newMessage = new byte[message.Length + inLen];
             Array.Copy(message, newMessage, message.Length);
-            Array.Copy(input, inOff, newMessage, message.Length, length);
+            Array.Copy(input, inOff, newMessage, message.Length, inLen);
             message = newMessage;
         }
-        
+
         /// <summary>
         /// Close the digest, producing the final digest value. The doFinal call leaves the digest reset.
         /// </summary>
@@ -69,7 +70,7 @@ namespace TuviSRPLib
                 throw new ArgumentOutOfRangeException(nameof(outOff), "Parameter inOff can not be negative.");
             }
 
-            var result = ExpandHash(message); 
+            var result = ExpandHash(message);
             Array.Copy(result, 0, output, outOff, result.Length);
 
             Reset();

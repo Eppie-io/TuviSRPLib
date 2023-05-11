@@ -25,6 +25,19 @@ namespace TuviSRPLibTests
         /// <param name="buf">byte array that should be filled by random numbers.</param>
         public override void NextBytes(byte[] buf)
         {
+           
+            for (int i = 0; i < buf.Length; i++)
+            {
+                buf[i] = seed[i % size];
+            }
+        }
+
+        /// <summary>
+        /// Fills byte array buf with specific bytes from seed.
+        /// </summary>
+        /// <param name="buf">byte array that should be filled by random numbers.</param>
+        public override void NextBytes(Span<byte> buf)
+        {
             for (int i = 0; i < buf.Length; i++)
             {
                 buf[i] = seed[i % size];

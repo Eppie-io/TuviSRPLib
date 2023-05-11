@@ -54,11 +54,21 @@ namespace TuviSRPLib
             this.digest = digest;
         }
 
+        /// <summary>
+        /// Initialises the server to accept a new client authentication attempt.
+        /// </summary>
         public virtual void Init(Srp6GroupParameters group, BigInteger v, IDigest digest, SecureRandom random)
         {
             Init(group.N, group.G, v, digest, random);
         }
 
+        /// <summary>
+        /// Initialises the server to accept a new client authentication attempt with some specific params:
+        /// generator = 2, IDigest is a new ExtendedHashDigest(), SecureRandom is a new SecureRandom().
+        /// </summary>
+        /// <param name="base64N">Modulus N.</param>
+        /// <param name="v">Verifier value.</param>
+        /// <exception cref="ArgumentException"></exception>
         public virtual void SimpleInit(string base64N, BigInteger v)
         {
             if (string.IsNullOrEmpty(base64N))
