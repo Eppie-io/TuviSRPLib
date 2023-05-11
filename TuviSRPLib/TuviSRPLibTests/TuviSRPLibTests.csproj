@@ -23,6 +23,8 @@
     <PackageReference Include="NUnit.Analyzers" Version="3.6.1" />
   </ItemGroup>
 
+  <!-- In current version of BouncyCastle.Cryptography there is a problem with finding interfaces implementations, 
+  so as temporarily solution we use next insertion taken from https://github.com/bcgit/bc-csharp/issues/447 -->
   <ItemGroup>
     <PackageReference Include="BouncyCastle.Cryptography" Version="2.2.1" ExcludeAssets="Compile" GeneratePathProperty="true" />
     <Reference Include="BouncyCastle.Cryptography">

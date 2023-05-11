@@ -43,7 +43,7 @@ namespace TuviSRPLib
 
             if (inLen < 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(inLen), "Parameter length can not be negative.");
+                throw new ArgumentOutOfRangeException(nameof(inLen), "Parameter inLen can not be negative.");
             }
 
             byte[] newMessage = new byte[message.Length + inLen];
