@@ -9,12 +9,12 @@ namespace TuviSRPLib
     /// </summary>
     public class ExtendedHashDigest : IDigest
     {
-        private byte[] message;
+        private byte[] _message;
         private const int DigestLength = 256;
 
         public ExtendedHashDigest()
         {
-            message = new byte[DigestLength];
+            _message = new byte[DigestLength];
             Reset();
         }
 
@@ -46,10 +46,10 @@ namespace TuviSRPLib
                 throw new ArgumentOutOfRangeException(nameof(inLen), "Parameter inLen can not be negative.");
             }
 
-            byte[] newMessage = new byte[message.Length + inLen];
-            Array.Copy(message, newMessage, message.Length);
-            Array.Copy(input, inOff, newMessage, message.Length, inLen);
-            message = newMessage;
+            byte[] newMessage = new byte[_message.Length + inLen];
+            Array.Copy(_message, newMessage, _message.Length);
+            Array.Copy(input, inOff, newMessage, _message.Length, inLen);
+            _message = newMessage;
         }
 
         /// <summary>
@@ -70,7 +70,7 @@ namespace TuviSRPLib
                 throw new ArgumentOutOfRangeException(nameof(outOff), "Parameter inOff can not be negative.");
             }
 
-            var result = ExpandHash(message);
+            var result = ExpandHash(_message);
             Array.Copy(result, 0, output, outOff, result.Length);
 
             Reset();
@@ -80,7 +80,7 @@ namespace TuviSRPLib
 
         public int GetByteLength()
         {
-            return message.Length;
+            return _message.Length;
         }
 
         public int GetDigestSize()
@@ -90,7 +90,7 @@ namespace TuviSRPLib
 
         public void Reset()
         {
-            message = new byte[0];
+            _message = new byte[0];
         }
 
         /// <summary>
@@ -99,10 +99,10 @@ namespace TuviSRPLib
         /// <param name="input">Updating byte.</param>
         public void Update(byte input)
         {
-            byte[] newMessage = new byte[message.Length + 1];
-            Array.Copy(message, newMessage, message.Length);
+            byte[] newMessage = new byte[_message.Length + 1];
+            Array.Copy(_message, newMessage, _message.Length);
             newMessage[newMessage.Length - 1] = input;
-            message = newMessage;
+            _message = newMessage;
         }
 
         private byte[] ExpandHash(byte[] data)
