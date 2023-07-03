@@ -18,7 +18,7 @@ namespace TuviSRPLib
     /// </summary>
     public static class ProtonSRPUtilities
     {
-        private const int cost = 10; // it shows how many reps(cycles) bcrypt will do during calculations (2^cost times)
+        private const int Cost = 10; // it shows how many reps(cycles) bcrypt will do during calculations (2^cost times)
 
         /// <summary>
         /// Calculates value of multiplier K.
@@ -64,7 +64,7 @@ namespace TuviSRPLib
 
             var newPassword = Append(password, new byte[] { 0 }); // Function HashBytes, file https://github.com/ProtonMail/bcrypt/blob/master/bcrypt.go, row 173
 
-            var hashedPassword = BCrypt.Generate(newPassword, extSalt, cost);
+            var hashedPassword = BCrypt.Generate(newPassword, extSalt, Cost);
 
             var message = FormMessage(extSalt, hashedPassword);
 
