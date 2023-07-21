@@ -1,12 +1,12 @@
-﻿using System;
-using System.Linq;
-using System.Text;
-using Org.BouncyCastle.Crypto;
+﻿using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Generators;
 using Org.BouncyCastle.Math;
 using Org.BouncyCastle.Security;
 using Org.BouncyCastle.Utilities;
 using ProtonBase64Lib;
+using System;
+using System.Linq;
+using System.Text;
 using TuviSRPLib.Utils;
 
 namespace TuviSRPLib
@@ -19,7 +19,7 @@ namespace TuviSRPLib
     public static class ProtonSRPUtilities
     {
         private const int Cost = 10; // it shows how many reps(cycles) bcrypt will do during calculations (2^cost times)
-
+        private const int SaltLen = 16; // bcrypt requirement
         /// <summary>
         /// Calculates value of multiplier K.
         /// </summary>
@@ -64,7 +64,7 @@ namespace TuviSRPLib
 
             var newPassword = Append(password, new byte[] { 0 }); // Function HashBytes, file https://github.com/ProtonMail/bcrypt/blob/master/bcrypt.go, row 173
 
-            var hashedPassword = BCrypt.Generate(newPassword, extSalt, Cost);
+            var hashedPassword = BCrypt.Generate(newPassword, extSalt.AsSpan(0, SaltLen).ToArray(), Cost); // Function HashBytes, file https://github.com/ProtonMail/bcrypt/blob/master/bcrypt.go, row 176
 
             var message = FormMessage(extSalt, hashedPassword);
 
@@ -89,14 +89,12 @@ namespace TuviSRPLib
             // Function build_bcrypt_str in https://github.com/ProtonMail/bcrypt/blob/master/bcrypt.go
             // creates prefix before salt. But in all visible cases only "$2y$10$" prefix is used:
             byte[] prefix = new byte[] { 36, 50, 121, 36, 49, 48, 36 }; // "$2y$10$"
-            
+
             var addSalt = ProtonBase64.Encode(extSalt);
+            var shortenedPassword = hashedPassword.AsSpan(0, hashedPassword.Length - 1);
+            var addPass = ProtonBase64.Encode(shortenedPassword.ToArray());
 
-            var shortenedPassword = new byte[hashedPassword.Length - 1];
-            Array.Copy(hashedPassword, 0, shortenedPassword, 0, shortenedPassword.Length);
-            var addPass = ProtonBase64.Encode(shortenedPassword);
-
-            return Append(Append(prefix, addSalt), addPass);
+            return Append(Append(prefix, addSalt.AsSpan(0, 22).ToArray()), addPass); // Function HashBytes, file https://github.com/ProtonMail/bcrypt/blob/master/bcrypt.go, row 159
         }
 
         /// <summary>
