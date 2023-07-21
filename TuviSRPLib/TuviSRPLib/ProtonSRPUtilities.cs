@@ -56,6 +56,10 @@ namespace TuviSRPLib
         /// <returns>X value.</returns>
         public static BigInteger CalculateX(IDigest digest, BigInteger N, byte[] salt, byte[] password)
         {
+            if (salt.Length < 10)
+            {
+                throw new ArgumentException($"`salt` is shorter than 10 bytes");
+            }
             int paddedLength = (N.BitLength + 7) / 8;
             byte[] output = new byte[digest.GetDigestSize()];
             Encoding enc = Encoding.UTF8;
