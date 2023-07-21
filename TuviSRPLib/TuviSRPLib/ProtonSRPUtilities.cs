@@ -66,11 +66,7 @@ namespace TuviSRPLib
             byte[] byteProton = enc.GetBytes("proton"); // Proton protocol appends (salt + "proton") before calculation
             var extSalt = Append(salt, byteProton); // Function hashPasswordVersion3, file https://github.com/ProtonMail/go-srp/blob/master/hash.go, row 111
 
-            var newPassword = Append(password, new byte[] { 0 }); // Function HashBytes, file https://github.com/ProtonMail/bcrypt/blob/master/bcrypt.go, row 173
-
-            var hashedPassword = BCrypt.Generate(newPassword, extSalt.AsSpan(0, SaltLen).ToArray(), Cost); // Function HashBytes, file https://github.com/ProtonMail/bcrypt/blob/master/bcrypt.go, row 176
-
-            var message = FormMessage(extSalt, hashedPassword);
+            byte[] message = GetMailboxPassword(password, extSalt);
 
             digest.BlockUpdate(message, 0, message.Length);
             byte[] bytes = N.ToLowEndianNByteArray(paddedLength);
@@ -81,13 +77,21 @@ namespace TuviSRPLib
             return new BigInteger(1, output.Reverse().ToArray());
         }
 
+        public static byte[] GetMailboxPassword(byte[] password, byte[] salt)
+        {
+            var newPassword = Append(password, new byte[] { 0 }); // Function HashBytes, file https://github.com/ProtonMail/bcrypt/blob/master/bcrypt.go, row 173
+
+            var hashedPassword = BCrypt.Generate(newPassword, salt.AsSpan(0, SaltLen).ToArray(), Cost); // Function HashBytes, file https://github.com/ProtonMail/bcrypt/blob/master/bcrypt.go, row 176
+            return FormBcryptString(salt, hashedPassword);
+        }
+
         /// <summary>
         /// Forming special sequence of bytes used in proton protocol.
         /// </summary>
         /// <param name="extSalt">Extended salt (salt + "proton").</param>
         /// <param name="hashedPassword">Hashed password (bcrypt algorithm).</param>
         /// <returns>Byte sequence.</returns>
-        private static byte[] FormMessage(byte[] extSalt, byte[] hashedPassword)
+        private static byte[] FormBcryptString(byte[] extSalt, byte[] hashedPassword)
         {
             // TODO: create dynamic prefix according to proton realization?
             // Function build_bcrypt_str in https://github.com/ProtonMail/bcrypt/blob/master/bcrypt.go
@@ -95,9 +99,8 @@ namespace TuviSRPLib
             byte[] prefix = new byte[] { 36, 50, 121, 36, 49, 48, 36 }; // "$2y$10$"
 
             var addSalt = ProtonBase64.Encode(extSalt);
-            var shortenedPassword = hashedPassword.AsSpan(0, hashedPassword.Length - 1);
-            var addPass = ProtonBase64.Encode(shortenedPassword.ToArray());
-
+            var shortenedPassword = hashedPassword.AsSpan(0, hashedPassword.Length - 1).ToArray();
+            var addPass = ProtonBase64.Encode(shortenedPassword);
             return Append(Append(prefix, addSalt.AsSpan(0, 22).ToArray()), addPass); // Function HashBytes, file https://github.com/ProtonMail/bcrypt/blob/master/bcrypt.go, row 159
         }
 
