@@ -52,7 +52,7 @@ namespace TuviSRPLib
             _message = newMessage;
         }
 
-#if NETCOREAPP2_1_OR_GREATER || !NETSTANDARD2_1_OR_GREATER
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
         /// <summary>Update the message digest with a span of bytes.</summary>
         /// <param name="input">the span containing the data.</param>
         public void BlockUpdate(ReadOnlySpan<byte> input)
