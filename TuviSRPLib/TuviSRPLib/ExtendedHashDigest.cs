@@ -52,6 +52,15 @@ namespace TuviSRPLib
             _message = newMessage;
         }
 
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+        /// <summary>Update the message digest with a span of bytes.</summary>
+        /// <param name="input">the span containing the data.</param>
+        public void BlockUpdate(ReadOnlySpan<byte> input)
+        {
+             throw new NotImplementedException();
+        }
+#endif
+
         /// <summary>
         /// Close the digest, producing the final digest value. The doFinal call leaves the digest reset.
         /// </summary>
@@ -77,6 +86,17 @@ namespace TuviSRPLib
 
             return DigestLength;
         }
+
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+        /// <summary>Close the digest, producing the final digest value.</summary>
+        /// <remarks>This call leaves the digest reset.</remarks>
+        /// <param name="output">the span the digest is to be copied into.</param>
+        /// <returns>the number of bytes written</returns>
+        public int DoFinal(Span<byte> output)
+        {
+            throw new NotImplementedException();
+        }
+#endif
 
         public int GetByteLength()
         {
