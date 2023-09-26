@@ -67,12 +67,24 @@ namespace TuviSRPLib
             var extSalt = Append(salt, byteProton); // Function hashPasswordVersion3, file https://github.com/ProtonMail/go-srp/blob/master/hash.go, row 111
 
             byte[] message = GetMailboxPassword(password, extSalt);
-
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+            digest.BlockUpdate(message);
+#else
             digest.BlockUpdate(message, 0, message.Length);
-            byte[] bytes = N.ToLowEndianNByteArray(paddedLength);
-            digest.BlockUpdate(bytes, 0, bytes.Length);
+#endif
 
+            byte[] bytes = N.ToLowEndianNByteArray(paddedLength);
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+            digest.BlockUpdate(bytes);
+#else
+            digest.BlockUpdate(bytes, 0, bytes.Length);
+#endif
+
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+            digest.DoFinal(output);
+#else
             digest.DoFinal(output, 0);
+#endif
 
             return new BigInteger(1, output.Reverse().ToArray());
         }
@@ -185,11 +197,19 @@ namespace TuviSRPLib
             int digestSize = digest.GetDigestSize();
 
             byte[] bytes = S.ToLowEndianNByteArray(paddedLength);
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+            digest.BlockUpdate(bytes);
+#else
             digest.BlockUpdate(bytes, 0, bytes.Length);
+#endif
 
             byte[] output = new byte[digestSize];
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+            digest.DoFinal(output);
+#else
             digest.DoFinal(output, 0);
-
+#endif
+            
             return new BigInteger(1, output.Reverse().ToArray());
         }
 
@@ -199,15 +219,33 @@ namespace TuviSRPLib
             int digestSize = digest.GetDigestSize();
 
             byte[] bytes = n1.ToLowEndianNByteArray(paddedLength);
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+            digest.BlockUpdate(bytes);
+#else
             digest.BlockUpdate(bytes, 0, bytes.Length);
+#endif
+
             bytes = n2.ToLowEndianNByteArray(paddedLength);
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+            digest.BlockUpdate(bytes);
+#else
             digest.BlockUpdate(bytes, 0, bytes.Length);
+#endif
+
             bytes = n3.ToLowEndianNByteArray(paddedLength);
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+            digest.BlockUpdate(bytes);
+#else
             digest.BlockUpdate(bytes, 0, bytes.Length);
+#endif
 
             byte[] output = new byte[digestSize];
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+            digest.DoFinal(output);
+#else
             digest.DoFinal(output, 0);
-
+#endif
+            
             return new BigInteger(1, output.Reverse().ToArray());
         }
 
@@ -217,13 +255,25 @@ namespace TuviSRPLib
             int digestSize = digest.GetDigestSize();
 
             byte[] bytes = n1.ToLowEndianNByteArray(paddedLength);
-            digest.BlockUpdate(bytes, 0, bytes.Length);
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+            digest.BlockUpdate(bytes);
+#else
+            digest.BlockUpdate(bytes, 0, bytes.Length); ;
+#endif
+
             bytes = n2.ToLowEndianNByteArray(paddedLength);
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+            digest.BlockUpdate(bytes);
+#else
             digest.BlockUpdate(bytes, 0, bytes.Length);
+#endif
 
             byte[] output = new byte[digestSize];
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+            digest.DoFinal(output);
+#else
             digest.DoFinal(output, 0);
-
+#endif
             return new BigInteger(1, output.Reverse().ToArray());
         }
 

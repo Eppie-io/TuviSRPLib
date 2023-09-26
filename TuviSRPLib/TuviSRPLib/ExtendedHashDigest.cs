@@ -57,7 +57,10 @@ namespace TuviSRPLib
         /// <param name="input">the span containing the data.</param>
         public void BlockUpdate(ReadOnlySpan<byte> input)
         {
-             throw new NotImplementedException();
+            byte[] newMessage = new byte[_message.Length + input.Length];
+            Array.Copy(_message, newMessage, _message.Length);
+            Array.Copy(input.ToArray(), 0, newMessage, _message.Length, input.Length);
+            _message = newMessage;
         }
 #endif
 
@@ -94,7 +97,11 @@ namespace TuviSRPLib
         /// <returns>the number of bytes written</returns>
         public int DoFinal(Span<byte> output)
         {
-            throw new NotImplementedException();
+            var result = ExpandHash(_message);
+            result.AsSpan(0, result.Length).CopyTo(output);
+            Reset();
+
+            return DigestLength;
         }
 #endif
 
