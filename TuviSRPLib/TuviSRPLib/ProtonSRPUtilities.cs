@@ -67,25 +67,12 @@ namespace TuviSRPLib
             var extSalt = Append(salt, byteProton); // Function hashPasswordVersion3, file https://github.com/ProtonMail/go-srp/blob/master/hash.go, row 111
 
             byte[] message = GetMailboxPassword(password, extSalt);
-#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
-            digest.BlockUpdate(message);
-#else
-            digest.BlockUpdate(message, 0, message.Length);
-#endif
+            BlockUpdateUnified(digest, message);
 
             byte[] bytes = N.ToLowEndianNByteArray(paddedLength);
-#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
-            digest.BlockUpdate(bytes);
-#else
-            digest.BlockUpdate(bytes, 0, bytes.Length);
-#endif
+            BlockUpdateUnified(digest, bytes);
 
-#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
-            digest.DoFinal(output);
-#else
-            digest.DoFinal(output, 0);
-#endif
-
+            DoFinalUnified(digest, output);
             return new BigInteger(1, output.Reverse().ToArray());
         }
 
@@ -197,19 +184,10 @@ namespace TuviSRPLib
             int digestSize = digest.GetDigestSize();
 
             byte[] bytes = S.ToLowEndianNByteArray(paddedLength);
-#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
-            digest.BlockUpdate(bytes);
-#else
-            digest.BlockUpdate(bytes, 0, bytes.Length);
-#endif
+            BlockUpdateUnified(digest, bytes);
 
             byte[] output = new byte[digestSize];
-#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
-            digest.DoFinal(output);
-#else
-            digest.DoFinal(output, 0);
-#endif
-            
+            DoFinalUnified(digest, output);
             return new BigInteger(1, output.Reverse().ToArray());
         }
 
@@ -219,33 +197,16 @@ namespace TuviSRPLib
             int digestSize = digest.GetDigestSize();
 
             byte[] bytes = n1.ToLowEndianNByteArray(paddedLength);
-#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
-            digest.BlockUpdate(bytes);
-#else
-            digest.BlockUpdate(bytes, 0, bytes.Length);
-#endif
+            BlockUpdateUnified(digest, bytes);
 
             bytes = n2.ToLowEndianNByteArray(paddedLength);
-#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
-            digest.BlockUpdate(bytes);
-#else
-            digest.BlockUpdate(bytes, 0, bytes.Length);
-#endif
+            BlockUpdateUnified(digest, bytes);
 
             bytes = n3.ToLowEndianNByteArray(paddedLength);
-#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
-            digest.BlockUpdate(bytes);
-#else
-            digest.BlockUpdate(bytes, 0, bytes.Length);
-#endif
+            BlockUpdateUnified(digest, bytes);
 
             byte[] output = new byte[digestSize];
-#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
-            digest.DoFinal(output);
-#else
-            digest.DoFinal(output, 0);
-#endif
-            
+            DoFinalUnified(digest, output);
             return new BigInteger(1, output.Reverse().ToArray());
         }
 
@@ -255,26 +216,31 @@ namespace TuviSRPLib
             int digestSize = digest.GetDigestSize();
 
             byte[] bytes = n1.ToLowEndianNByteArray(paddedLength);
-#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
-            digest.BlockUpdate(bytes);
-#else
-            digest.BlockUpdate(bytes, 0, bytes.Length); ;
-#endif
-
+            BlockUpdateUnified(digest, bytes);
             bytes = n2.ToLowEndianNByteArray(paddedLength);
+            BlockUpdateUnified(digest, bytes);
+
+            byte[] output = new byte[digestSize];
+            DoFinalUnified(digest, output); 
+            return new BigInteger(1, output.Reverse().ToArray());
+        }
+
+        private static void BlockUpdateUnified(IDigest digest, byte[] bytes)
+        {
 #if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
             digest.BlockUpdate(bytes);
 #else
             digest.BlockUpdate(bytes, 0, bytes.Length);
 #endif
+        }
 
-            byte[] output = new byte[digestSize];
+        private static void DoFinalUnified(IDigest digest, byte[] output)
+        {
 #if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
             digest.DoFinal(output);
 #else
             digest.DoFinal(output, 0);
 #endif
-            return new BigInteger(1, output.Reverse().ToArray());
         }
 
         private static byte[] Append(byte[] arr1, byte[] arr2)
