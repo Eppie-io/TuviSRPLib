@@ -1,5 +1,6 @@
 ﻿using Org.BouncyCastle.Crypto;
 using System;
+using System.Linq;
 using System.Security.Cryptography;
 
 namespace TuviSRPLib
@@ -46,10 +47,8 @@ namespace TuviSRPLib
                 throw new ArgumentOutOfRangeException(nameof(inLen), "Parameter inLen can not be negative.");
             }
 
-            byte[] newMessage = new byte[_message.Length + inLen];
-            Array.Copy(_message, newMessage, _message.Length);
-            Array.Copy(input, inOff, newMessage, _message.Length, inLen);
-            _message = newMessage;
+            Array.Resize(ref _message, _message.Length + input.Length);
+            Array.Copy(input.ToArray(), 0, _message, _message.Length - input.Length, input.Length);
         }
 
 #if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
@@ -57,10 +56,8 @@ namespace TuviSRPLib
         /// <param name="input">the span containing the data.</param>
         public void BlockUpdate(ReadOnlySpan<byte> input)
         {
-            byte[] newMessage = new byte[_message.Length + input.Length];
-            Array.Copy(_message, newMessage, _message.Length);
-            Array.Copy(input.ToArray(), 0, newMessage, _message.Length, input.Length);
-            _message = newMessage;
+            Array.Resize(ref _message, _message.Length + input.Length);
+            Array.Copy(input.ToArray(), 0, _message, _message.Length - input.Length, input.Length);
         }
 #endif
 
@@ -117,7 +114,8 @@ namespace TuviSRPLib
 
         public void Reset()
         {
-            _message = new byte[0];
+            Array.Clear(_message, 0, _message.Length);
+            _message = Array.Empty<byte>();
         }
 
         /// <summary>
