@@ -1,6 +1,7 @@
 ﻿using Org.BouncyCastle.Crypto;
 using System;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 
 namespace TuviSRPLib
@@ -112,9 +113,14 @@ namespace TuviSRPLib
             return DigestLength;
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
         public void Reset()
         {
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+            CryptographicOperations.ZeroMemory(_message);
+#else
             Array.Clear(_message, 0, _message.Length);
+#endif
             _message = Array.Empty<byte>();
         }
 
