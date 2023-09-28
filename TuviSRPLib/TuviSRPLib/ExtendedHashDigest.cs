@@ -113,16 +113,32 @@ namespace TuviSRPLib
             return DigestLength;
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
         public void Reset()
         {
 #if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
             CryptographicOperations.ZeroMemory(_message);
 #else
-            Array.Clear(_message, 0, _message.Length);
+            ZeroMemory(_message);
 #endif
             _message = Array.Empty<byte>();
         }
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
+        private static void ZeroMemory(byte[] buffer)
+        {
+            Array.Clear(buffer, 0, buffer.Length);
+        }
+
+//        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
+//        public void Reset()
+//        {
+//#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+//            CryptographicOperations.ZeroMemory(_message);
+//#else
+//            Array.Clear(_message, 0, _message.Length);
+//#endif
+//            _message = Array.Empty<byte>();
+//        }
 
         /// <summary>
         /// Update the message digest with a single byte.
