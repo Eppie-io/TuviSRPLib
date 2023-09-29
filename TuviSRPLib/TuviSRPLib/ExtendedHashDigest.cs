@@ -60,20 +60,6 @@ namespace TuviSRPLib
             _currentSize += inLen;
         }
 
-        private void IncreaseBufferCapacity(int inLen)
-        {
-            do
-            {
-                _capacity <<= 1; // *= 2
-            }
-            while (_currentSize + inLen > _capacity);
-
-            byte[] newBuffer = new byte[_capacity];
-            Array.Copy(_buffer, 0, newBuffer, 0, _currentSize);
-            ZeroMemory(_buffer);
-            _buffer = newBuffer;
-        }
-
 #if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
         /// <summary>Update the message digest with a span of bytes.</summary>
         /// <param name="input">the span containing the data.</param>
@@ -133,7 +119,7 @@ namespace TuviSRPLib
 
         public int GetByteLength()
         {
-            return _buffer.Length;
+            return _currentSize;
         }
 
         public int GetDigestSize()
@@ -174,6 +160,20 @@ namespace TuviSRPLib
             }
             _buffer[_currentSize] = input;
             _currentSize += 1;
+        }
+
+        private void IncreaseBufferCapacity(int inLen)
+        {
+            do
+            {
+                _capacity <<= 1; // *= 2
+            }
+            while (_currentSize + inLen > _capacity);
+
+            byte[] newBuffer = new byte[_capacity];
+            Array.Copy(_buffer, 0, newBuffer, 0, _currentSize);
+            ZeroMemory(_buffer);
+            _buffer = newBuffer;
         }
 
         private byte[] ExpandHash(byte[] data)
