@@ -67,13 +67,12 @@ namespace TuviSRPLib
             var extSalt = Append(salt, byteProton); // Function hashPasswordVersion3, file https://github.com/ProtonMail/go-srp/blob/master/hash.go, row 111
 
             byte[] message = GetMailboxPassword(password, extSalt);
+            BlockUpdateUnified(digest, message);
 
-            digest.BlockUpdate(message, 0, message.Length);
             byte[] bytes = N.ToLowEndianNByteArray(paddedLength);
-            digest.BlockUpdate(bytes, 0, bytes.Length);
+            BlockUpdateUnified(digest, bytes);
 
-            digest.DoFinal(output, 0);
-
+            DoFinalUnified(digest, output);
             return new BigInteger(1, output.Reverse().ToArray());
         }
 
@@ -185,11 +184,10 @@ namespace TuviSRPLib
             int digestSize = digest.GetDigestSize();
 
             byte[] bytes = S.ToLowEndianNByteArray(paddedLength);
-            digest.BlockUpdate(bytes, 0, bytes.Length);
+            BlockUpdateUnified(digest, bytes);
 
             byte[] output = new byte[digestSize];
-            digest.DoFinal(output, 0);
-
+            DoFinalUnified(digest, output);
             return new BigInteger(1, output.Reverse().ToArray());
         }
 
@@ -199,15 +197,16 @@ namespace TuviSRPLib
             int digestSize = digest.GetDigestSize();
 
             byte[] bytes = n1.ToLowEndianNByteArray(paddedLength);
-            digest.BlockUpdate(bytes, 0, bytes.Length);
+            BlockUpdateUnified(digest, bytes);
+
             bytes = n2.ToLowEndianNByteArray(paddedLength);
-            digest.BlockUpdate(bytes, 0, bytes.Length);
+            BlockUpdateUnified(digest, bytes);
+
             bytes = n3.ToLowEndianNByteArray(paddedLength);
-            digest.BlockUpdate(bytes, 0, bytes.Length);
+            BlockUpdateUnified(digest, bytes);
 
             byte[] output = new byte[digestSize];
-            digest.DoFinal(output, 0);
-
+            DoFinalUnified(digest, output);
             return new BigInteger(1, output.Reverse().ToArray());
         }
 
@@ -217,14 +216,31 @@ namespace TuviSRPLib
             int digestSize = digest.GetDigestSize();
 
             byte[] bytes = n1.ToLowEndianNByteArray(paddedLength);
-            digest.BlockUpdate(bytes, 0, bytes.Length);
+            BlockUpdateUnified(digest, bytes);
             bytes = n2.ToLowEndianNByteArray(paddedLength);
-            digest.BlockUpdate(bytes, 0, bytes.Length);
+            BlockUpdateUnified(digest, bytes);
 
             byte[] output = new byte[digestSize];
-            digest.DoFinal(output, 0);
-
+            DoFinalUnified(digest, output); 
             return new BigInteger(1, output.Reverse().ToArray());
+        }
+
+        private static void BlockUpdateUnified(IDigest digest, byte[] bytes)
+        {
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+            digest.BlockUpdate(bytes);
+#else
+            digest.BlockUpdate(bytes, 0, bytes.Length);
+#endif
+        }
+
+        private static void DoFinalUnified(IDigest digest, byte[] output)
+        {
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+            digest.DoFinal(output);
+#else
+            digest.DoFinal(output, 0);
+#endif
         }
 
         private static byte[] Append(byte[] arr1, byte[] arr2)

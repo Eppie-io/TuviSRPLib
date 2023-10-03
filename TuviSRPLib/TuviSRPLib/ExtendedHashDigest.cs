@@ -1,5 +1,7 @@
 ﻿using Org.BouncyCastle.Crypto;
 using System;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 
 namespace TuviSRPLib
@@ -9,12 +11,16 @@ namespace TuviSRPLib
     /// </summary>
     public class ExtendedHashDigest : IDigest
     {
-        private byte[] _message;
+        private byte[] _buffer;
+        private int _capacity;
+        private int _currentSize;
         private const int DigestLength = 256;
 
         public ExtendedHashDigest()
         {
-            _message = new byte[DigestLength];
+            _capacity = 512;
+            _currentSize = 0;
+            _buffer = new byte[_capacity];
             Reset();
         }
 
@@ -46,10 +52,12 @@ namespace TuviSRPLib
                 throw new ArgumentOutOfRangeException(nameof(inLen), "Parameter inLen can not be negative.");
             }
 
-            byte[] newMessage = new byte[_message.Length + inLen];
-            Array.Copy(_message, newMessage, _message.Length);
-            Array.Copy(input, inOff, newMessage, _message.Length, inLen);
-            _message = newMessage;
+            if (_currentSize + inLen > _capacity)
+            {
+                IncreaseBufferCapacity(inLen);
+            }
+            Array.Copy(input, inOff, _buffer, _currentSize, inLen);
+            _currentSize += inLen;
         }
 
 #if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
@@ -57,7 +65,12 @@ namespace TuviSRPLib
         /// <param name="input">the span containing the data.</param>
         public void BlockUpdate(ReadOnlySpan<byte> input)
         {
-             throw new NotImplementedException();
+            if (_currentSize + input.Length > _capacity)
+            {
+                IncreaseBufferCapacity(input.Length);                
+            }
+            Array.Copy(input.ToArray(), 0, _buffer, _currentSize, input.Length);
+            _currentSize += input.Length;
         }
 #endif
 
@@ -79,7 +92,9 @@ namespace TuviSRPLib
                 throw new ArgumentOutOfRangeException(nameof(outOff), "Parameter inOff can not be negative.");
             }
 
-            var result = ExpandHash(_message);
+            var result = ExpandHash(new List<byte>(_buffer)
+                    .GetRange(0, _currentSize)
+                    .ToArray());
             Array.Copy(result, 0, output, outOff, result.Length);
 
             Reset();
@@ -94,13 +109,17 @@ namespace TuviSRPLib
         /// <returns>the number of bytes written</returns>
         public int DoFinal(Span<byte> output)
         {
-            throw new NotImplementedException();
+            var result = ExpandHash(_buffer.AsSpan()[.._currentSize].ToArray());
+            result.AsSpan(0, result.Length).CopyTo(output);
+            Reset();
+
+            return DigestLength;
         }
 #endif
 
         public int GetByteLength()
         {
-            return _message.Length;
+            return _currentSize;
         }
 
         public int GetDigestSize()
@@ -108,9 +127,25 @@ namespace TuviSRPLib
             return DigestLength;
         }
 
+        /// <summary>
+        /// Reset all the parameters to initial values.
+        /// </summary>
         public void Reset()
         {
-            _message = new byte[0];
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+            CryptographicOperations.ZeroMemory(_buffer);
+#else
+            ZeroMemory(_buffer);
+#endif
+            _currentSize = 0;
+            _capacity = 512;
+            _buffer = new byte[_capacity];
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
+        private static void ZeroMemory(byte[] buffer)
+        {
+            Array.Clear(buffer, 0, buffer.Length);
         }
 
         /// <summary>
@@ -119,10 +154,26 @@ namespace TuviSRPLib
         /// <param name="input">Updating byte.</param>
         public void Update(byte input)
         {
-            byte[] newMessage = new byte[_message.Length + 1];
-            Array.Copy(_message, newMessage, _message.Length);
-            newMessage[newMessage.Length - 1] = input;
-            _message = newMessage;
+            if (_currentSize + 1 > _capacity)
+            {
+                IncreaseBufferCapacity(1);
+            }
+            _buffer[_currentSize] = input;
+            _currentSize += 1;
+        }
+
+        private void IncreaseBufferCapacity(int inLen)
+        {
+            do
+            {
+                _capacity <<= 1; // *= 2
+            }
+            while (_currentSize + inLen > _capacity);
+
+            byte[] newBuffer = new byte[_capacity];
+            Array.Copy(_buffer, 0, newBuffer, 0, _currentSize);
+            ZeroMemory(_buffer);
+            _buffer = newBuffer;
         }
 
         private byte[] ExpandHash(byte[] data)
@@ -143,6 +194,7 @@ namespace TuviSRPLib
             Array.Copy(part1, 0, result, 64, 64);
             Array.Copy(part2, 0, result, 128, 64);
             Array.Copy(part3, 0, result, 192, 64);
+            ZeroMemory(tempData);
             return result;
         }
     }
