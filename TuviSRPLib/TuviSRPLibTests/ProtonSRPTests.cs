@@ -41,11 +41,11 @@ namespace TuviSRPLibTests
             client.CalculateSecret(pubB);
 
             BigInteger M1 = client.CalculateClientEvidenceMessage();
-            Assert.IsTrue(server.VerifyClientEvidenceMessage(M1), "Message M1 is not verified.");
+            Assert.That(server.VerifyClientEvidenceMessage(M1), Is.True, "Message M1 is not verified.");
 
             BigInteger M2 = server.CalculateServerEvidenceMessage();
 
-            Assert.IsTrue(client.VerifyServerEvidenceMessage(M2), "Message M2 is not verified.");
+            Assert.That(client.VerifyServerEvidenceMessage(M2), Is.True, "Message M2 is not verified.");
 
             BigInteger clientKey = client.CalculateSessionKey();
             BigInteger serverKey = server.CalculateSessionKey();
@@ -99,7 +99,7 @@ namespace TuviSRPLibTests
             BigInteger M1 = client.CalculateClientEvidenceMessage();
             Assert.That(M1, Is.EqualTo(expectedM1));
 
-            Assert.IsTrue(client.VerifyServerEvidenceMessage(expectedM2), "Message M2 is not verified.");
+            Assert.That(client.VerifyServerEvidenceMessage(expectedM2), Is.True, "Message M2 is not verified.");
         }
 
         [Test]
@@ -136,7 +136,7 @@ namespace TuviSRPLibTests
             BigInteger M1 = client.CalculateClientEvidenceMessage();
             Assert.That(M1.ToBase64(), Is.EqualTo(testClientProof));
 
-            Assert.IsTrue(client.VerifyServerEvidenceMessage(testServerProof), "Message M2 is not verified.");
+            Assert.That(client.VerifyServerEvidenceMessage(testServerProof), Is.True, "Message M2 is not verified.");
         }
 
         [TestCase("123456")]
@@ -172,7 +172,7 @@ namespace TuviSRPLibTests
             client.CalculateSecret(pubB);
 
             BigInteger M1 = client.CalculateClientEvidenceMessage();
-            Assert.IsFalse(server.VerifyClientEvidenceMessage(M1), "Message M1 is verified while it should not.");
+            Assert.That(server.VerifyClientEvidenceMessage(M1), Is.False, "Message M1 is verified while it should not.");
         }
 
         [TestCase("1234567890")]
@@ -209,7 +209,7 @@ namespace TuviSRPLibTests
             client.CalculateSecret(pubB);
 
             BigInteger M1 = client.CalculateClientEvidenceMessage();
-            Assert.IsFalse(server.VerifyClientEvidenceMessage(M1), "Message M1 is verified while it should not.");
+            Assert.That(server.VerifyClientEvidenceMessage(M1), Is.False, "Message M1 is verified while it should not.");
         }
 
         [TestCase("")]
