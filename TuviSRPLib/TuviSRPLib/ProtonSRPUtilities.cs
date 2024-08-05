@@ -78,7 +78,16 @@ namespace TuviSRPLib
 
         public static byte[] GetMailboxPassword(byte[] password, byte[] salt)
         {
+            // Maximum size of password == size of Blowfish P-array
+            // The P-array consists of 18 32-bit subkeys (18 * 32 / 8 = 72)
+            const int MaxPasswordBytes = 72;
+
             var newPassword = Append(password, new byte[] { 0 }); // Function HashBytes, file https://github.com/ProtonMail/bcrypt/blob/master/bcrypt.go, row 173
+
+            if (password.Length >= MaxPasswordBytes)
+            {
+                newPassword = password.Take(MaxPasswordBytes).ToArray();
+            }
 
             var hashedPassword = BCrypt.Generate(newPassword, salt.AsSpan(0, SaltLen).ToArray(), Cost); // Function HashBytes, file https://github.com/ProtonMail/bcrypt/blob/master/bcrypt.go, row 176
             return FormBcryptString(salt, hashedPassword);
@@ -221,7 +230,7 @@ namespace TuviSRPLib
             BlockUpdateUnified(digest, bytes);
 
             byte[] output = new byte[digestSize];
-            DoFinalUnified(digest, output); 
+            DoFinalUnified(digest, output);
             return new BigInteger(1, output.Reverse().ToArray());
         }
 
