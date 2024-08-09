@@ -78,7 +78,28 @@ namespace TuviSRPLib
 
         public static byte[] GetMailboxPassword(byte[] password, byte[] salt)
         {
+            // Note: About the 'password' parameter
+            //
+            // The BouncyCastle 'Bcrypt' (BCrypt.Generate) algorithm has a strict limitation of
+            // no more than 72 bytes for the 'password' parameter size.
+            // However, the ProtonMail 'Bcrypt' algorithm has no limitation and allows the 'password'
+            // parameter size to be larger than 72 bytes. Despite this, it also uses 72 bytes
+            // according to the specification which requires initialization with 18 32-bit subkeys.
+            // This comes from the 'Eksblowfish' algorithm which is the first phases of the 'Bcrypt'.
+            //
+            // Therefore, the 'password' parameter must be truncated to the first 72 bytes.
+            //
+            // See: https://www.usenix.org/legacy/event/usenix99/provos/provos.pdf
+            // See: https://github.com/ProtonMail/bcrypt/blob/master/bcrypt.go#L110 (func: HashBytes)
+
+            const int MaxPasswordBytes = 72;
+
             var newPassword = Append(password, new byte[] { 0 }); // Function HashBytes, file https://github.com/ProtonMail/bcrypt/blob/master/bcrypt.go, row 173
+
+            if (password.Length >= MaxPasswordBytes)
+            {
+                newPassword = password.Take(MaxPasswordBytes).ToArray();
+            }
 
             var hashedPassword = BCrypt.Generate(newPassword, salt.AsSpan(0, SaltLen).ToArray(), Cost); // Function HashBytes, file https://github.com/ProtonMail/bcrypt/blob/master/bcrypt.go, row 176
             return FormBcryptString(salt, hashedPassword);
@@ -221,7 +242,7 @@ namespace TuviSRPLib
             BlockUpdateUnified(digest, bytes);
 
             byte[] output = new byte[digestSize];
-            DoFinalUnified(digest, output); 
+            DoFinalUnified(digest, output);
             return new BigInteger(1, output.Reverse().ToArray());
         }
 
