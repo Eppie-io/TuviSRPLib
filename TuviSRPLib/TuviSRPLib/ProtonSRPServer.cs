@@ -14,38 +14,63 @@ namespace TuviSRPLib
     /// </summary>
     public class ProtonSRPServer
     {
-        protected BigInteger N;
-        protected BigInteger g;
-        protected BigInteger v;
+        protected BigInteger N { get; set; }
+        protected BigInteger g { get; set; }
+        protected BigInteger v { get; set; }
 
-        protected SecureRandom random;
-        protected IDigest digest;
+        protected SecureRandom random { get; set; }
+        protected IDigest digest { get; set; }
 
-        protected BigInteger A;
+        protected BigInteger A { get; set; }
 
-        protected BigInteger privB;
-        protected BigInteger pubB;
+        protected BigInteger privB { get; set; }
+        protected BigInteger pubB { get; set; }
 
-        protected BigInteger u;
-        protected BigInteger S;
-        protected BigInteger M1;
-        protected BigInteger M2;
-        protected BigInteger Key;
+        protected BigInteger u { get; set; }
+        protected BigInteger S { get; set; }
+        protected BigInteger M1 { get; set; }
+        protected BigInteger M2 { get; set; }
+        protected BigInteger Key { get; set; }
 
         public ProtonSRPServer()
         {
         }
 
         /**
-	     * Initialises the server to accept a new client authentication attempt
-	     * @param N The safe prime associated with the client's verifier
-	     * @param g The group parameter associated with the client's verifier
-	     * @param v The client's verifier
-	     * @param digest The digest algorithm associated with the client's verifier
-	     * @param random For key generation
-	     */
+         * Initialises the server to accept a new client authentication attempt
+         * @param N The safe prime associated with the client's verifier
+         * @param g The group parameter associated with the client's verifier
+         * @param v The client's verifier
+         * @param digest The digest algorithm associated with the client's verifier
+         * @param random For key generation
+         */
         public virtual void Init(BigInteger N, BigInteger g, BigInteger v, IDigest digest, SecureRandom random)
         {
+            if (N is null)
+            {
+                throw new ArgumentNullException(nameof(N));
+            }
+
+            if (g is null)
+            {
+                throw new ArgumentNullException(nameof(g));
+            }
+
+            if (v is null)
+            {
+                throw new ArgumentNullException(nameof(v));
+            }
+
+            if (digest is null)
+            {
+                throw new ArgumentNullException(nameof(digest));
+            }
+
+            if (random is null)
+            {
+                throw new ArgumentNullException(nameof(random));
+            }
+
             this.N = N;
             this.g = g;
             this.v = v;
@@ -59,6 +84,26 @@ namespace TuviSRPLib
         /// </summary>
         public virtual void Init(Srp6GroupParameters group, BigInteger v, IDigest digest, SecureRandom random)
         {
+            if (group is null)
+            {
+                throw new ArgumentNullException(nameof(group));
+            }
+
+            if (v is null)
+            {
+                throw new ArgumentNullException(nameof(v));
+            }
+
+            if (digest is null)
+            {
+                throw new ArgumentNullException(nameof(digest));
+            }
+
+            if (random is null)
+            {
+                throw new ArgumentNullException(nameof(random));
+            }
+
             Init(group.N, group.G, v, digest, random);
         }
 
@@ -76,6 +121,11 @@ namespace TuviSRPLib
                 throw new ArgumentException("Parameter can not be null or empty", nameof(base64N));
             }
 
+            if (v is null)
+            {
+                throw new ArgumentNullException(nameof(v));
+            }
+
             var decodedBase64N = Base64.Decode(base64N);
             BigInteger N = new BigInteger(1, decodedBase64N.Reverse().ToArray());
             BigInteger g = new BigInteger("2");
@@ -83,9 +133,9 @@ namespace TuviSRPLib
         }
 
         /**
-	     * Generates the server's credentials that are to be sent to the client.
-	     * @return The server's public value to the client
-	     */
+         * Generates the server's credentials that are to be sent to the client.
+         * @return The server's public value to the client
+         */
         public virtual BigInteger GenerateServerCredentials()
         {
             BigInteger k = ProtonSRPUtilities.CalculateK(digest, g, N);
@@ -96,11 +146,11 @@ namespace TuviSRPLib
         }
 
         /**
-	     * Processes the client's credentials. If valid the shared secret is generated and returned.
-	     * @param clientA The client's credentials
-	     * @return A shared secret BigInteger
-	     * @throws CryptoException If client's credentials are invalid
-	     */
+         * Processes the client's credentials. If valid the shared secret is generated and returned.
+         * @param clientA The client's credentials
+         * @return A shared secret BigInteger
+         * @throws CryptoException If client's credentials are invalid
+         */
         public virtual BigInteger CalculateSecret(BigInteger clientA)
         {
             this.A = ProtonSRPUtilities.ValidatePublicValue(N, clientA);
@@ -122,12 +172,12 @@ namespace TuviSRPLib
         }
 
         /** 
-	     * Authenticates the received client evidence message M1 and saves it only if correct.
-	     * To be called after calculating the secret S.
-	     * @param M1: the client side generated evidence message
-	     * @return A boolean indicating if the client message M1 was the expected one.
-	     * @throws CryptoException 
-	     */
+         * Authenticates the received client evidence message M1 and saves it only if correct.
+         * To be called after calculating the secret S.
+         * @param M1: the client side generated evidence message
+         * @return A boolean indicating if the client message M1 was the expected one.
+         * @throws CryptoException 
+         */
         public virtual bool VerifyClientEvidenceMessage(BigInteger clientM1)
         {
             // Verify pre-requirements
@@ -148,11 +198,11 @@ namespace TuviSRPLib
         }
 
         /**
-	     * Computes the server evidence message M2 using the previously verified values.
-	     * To be called after successfully verifying the client evidence message M1.
-	     * @return M2: the server side generated evidence message
-	     * @throws CryptoException
-	     */
+         * Computes the server evidence message M2 using the previously verified values.
+         * To be called after successfully verifying the client evidence message M1.
+         * @return M2: the server side generated evidence message
+         * @throws CryptoException
+         */
         public virtual BigInteger CalculateServerEvidenceMessage()
         {
             // Verify pre-requirements
@@ -168,11 +218,11 @@ namespace TuviSRPLib
         }
 
         /**
-	     * Computes the final session key as a result of the SRP successful mutual authentication
-	     * To be called after calculating the server evidence message M2.
-	     * @return Key: the mutual authenticated symmetric session key
-	     * @throws CryptoException
-	     */
+         * Computes the final session key as a result of the SRP successful mutual authentication
+         * To be called after calculating the server evidence message M2.
+         * @return Key: the mutual authenticated symmetric session key
+         * @throws CryptoException
+         */
         public virtual BigInteger CalculateSessionKey()
         {
             // Verify pre-requirements

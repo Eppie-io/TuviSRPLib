@@ -4,6 +4,7 @@
     <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
     <AssemblyTitle>Tuvi Proton SRP Library ($(TargetFramework))</AssemblyTitle>
     <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
+	<AnalysisLevel>6.0-all</AnalysisLevel>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

@@ -67,7 +67,7 @@ namespace TuviSRPLib
         {
             if (_currentSize + input.Length > _capacity)
             {
-                IncreaseBufferCapacity(input.Length);                
+                IncreaseBufferCapacity(input.Length);
             }
             Array.Copy(input.ToArray(), 0, _buffer, _currentSize, input.Length);
             _currentSize += input.Length;
@@ -176,26 +176,28 @@ namespace TuviSRPLib
             _buffer = newBuffer;
         }
 
-        private byte[] ExpandHash(byte[] data)
+        private static byte[] ExpandHash(byte[] data)
         {
-            var sha512 = SHA512.Create();
-            byte[] tempData = new byte[data.Length + 1];
-            Array.Copy(data, tempData, data.Length);
-            tempData[tempData.Length - 1] = 0;
-            byte[] part0 = sha512.ComputeHash(tempData);
-            tempData[tempData.Length - 1] = 1;
-            byte[] part1 = sha512.ComputeHash(tempData);
-            tempData[tempData.Length - 1] = 2;
-            byte[] part2 = sha512.ComputeHash(tempData);
-            tempData[tempData.Length - 1] = 3;
-            byte[] part3 = sha512.ComputeHash(tempData);
-            byte[] result = new byte[64 * 4];
-            Array.Copy(part0, 0, result, 0, 64);
-            Array.Copy(part1, 0, result, 64, 64);
-            Array.Copy(part2, 0, result, 128, 64);
-            Array.Copy(part3, 0, result, 192, 64);
-            ZeroMemory(tempData);
-            return result;
+            using (var sha512 = SHA512.Create())
+            {
+                byte[] tempData = new byte[data.Length + 1];
+                Array.Copy(data, tempData, data.Length);
+                tempData[tempData.Length - 1] = 0;
+                byte[] part0 = sha512.ComputeHash(tempData);
+                tempData[tempData.Length - 1] = 1;
+                byte[] part1 = sha512.ComputeHash(tempData);
+                tempData[tempData.Length - 1] = 2;
+                byte[] part2 = sha512.ComputeHash(tempData);
+                tempData[tempData.Length - 1] = 3;
+                byte[] part3 = sha512.ComputeHash(tempData);
+                byte[] result = new byte[64 * 4];
+                Array.Copy(part0, 0, result, 0, 64);
+                Array.Copy(part1, 0, result, 64, 64);
+                Array.Copy(part2, 0, result, 128, 64);
+                Array.Copy(part3, 0, result, 192, 64);
+                ZeroMemory(tempData);
+                return result;
+            }
         }
     }
 }

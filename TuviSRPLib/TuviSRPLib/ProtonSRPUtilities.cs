@@ -29,6 +29,16 @@ namespace TuviSRPLib
         /// <returns>Multiplier value.</returns>
         public static BigInteger CalculateK(IDigest digest, BigInteger g, BigInteger N)
         {
+            if (digest is null)
+            {
+                throw new ArgumentNullException(nameof(digest));
+            }
+
+            if (N is null)
+            {
+                throw new ArgumentNullException(nameof(N));
+            }
+
             return HashPaddedPair(digest, N, g, N);
         }
 
@@ -42,6 +52,16 @@ namespace TuviSRPLib
         /// <returns>U value.</returns>
         public static BigInteger CalculateU(IDigest digest, BigInteger N, BigInteger A, BigInteger B)
         {
+            if (digest is null)
+            {
+                throw new ArgumentNullException(nameof(digest));
+            }
+
+            if (N is null)
+            {
+                throw new ArgumentNullException(nameof(N));
+            }
+
             return HashPaddedPair(digest, N, A, B);
         }
 
@@ -56,6 +76,26 @@ namespace TuviSRPLib
         /// <returns>X value.</returns>
         public static BigInteger CalculateX(IDigest digest, BigInteger N, byte[] salt, byte[] password)
         {
+            if (digest is null)
+            {
+                throw new ArgumentNullException(nameof(digest));
+            }
+
+            if (N is null)
+            {
+                throw new ArgumentNullException(nameof(N));
+            }
+
+            if (salt is null)
+            {
+                throw new ArgumentNullException(nameof(salt));
+            }
+
+            if (password is null)
+            {
+                throw new ArgumentNullException(nameof(password));
+            }
+
             if (salt.Length < 10)
             {
                 throw new ArgumentException($"`salt` is shorter than 10 bytes");
@@ -78,6 +118,16 @@ namespace TuviSRPLib
 
         public static byte[] GetMailboxPassword(byte[] password, byte[] salt)
         {
+            if (password is null)
+            {
+                throw new ArgumentNullException(nameof(password));
+            }
+
+            if (salt is null)
+            {
+                throw new ArgumentNullException(nameof(salt));
+            }
+
             // Note: About the 'password' parameter
             //
             // The BouncyCastle 'Bcrypt' (BCrypt.Generate) algorithm has a strict limitation of
@@ -136,12 +186,57 @@ namespace TuviSRPLib
         /// <returns>Verifier value.</returns>
         public static BigInteger CalculateVerifier(IDigest digest, BigInteger N, BigInteger g, byte[] salt, byte[] password)
         {
+            if (digest is null)
+            {
+                throw new ArgumentNullException(nameof(digest));
+            }
+
+            if (N is null)
+            {
+                throw new ArgumentNullException(nameof(N));
+            }
+
+            if (g is null)
+            {
+                throw new ArgumentNullException(nameof(g));
+            }
+
+            if (salt is null)
+            {
+                throw new ArgumentNullException(nameof(salt));
+            }
+
+            if (password is null)
+            {
+                throw new ArgumentNullException(nameof(password));
+            }
+
             var x = CalculateX(digest, N, salt, password);
             return g.ModPow(x, N);
         }
 
         public static BigInteger GeneratePrivateValue(IDigest digest, BigInteger N, BigInteger g, SecureRandom random)
         {
+            if (digest is null)
+            {
+                throw new ArgumentNullException(nameof(digest));
+            }
+
+            if (N is null)
+            {
+                throw new ArgumentNullException(nameof(N));
+            }
+
+            if (g is null)
+            {
+                throw new ArgumentNullException(nameof(g));
+            }
+
+            if (random is null)
+            {
+                throw new ArgumentNullException(nameof(random));
+            }
+
             int minBits = System.Math.Min(256, N.BitLength / 2);
             BigInteger min = BigInteger.One.ShiftLeft(minBits - 1);
             BigInteger max = N.Subtract(BigInteger.One);
@@ -151,6 +246,16 @@ namespace TuviSRPLib
 
         public static BigInteger ValidatePublicValue(BigInteger N, BigInteger val)
         {
+            if (N is null)
+            {
+                throw new ArgumentNullException(nameof(N));
+            }
+
+            if (val is null)
+            {
+                throw new ArgumentNullException(nameof(val));
+            }
+
             val = val.Mod(N);
 
             // Check that val % N != 0
@@ -172,6 +277,16 @@ namespace TuviSRPLib
          */
         public static BigInteger CalculateM1(IDigest digest, BigInteger N, BigInteger A, BigInteger B, BigInteger S)
         {
+            if (digest is null)
+            {
+                throw new ArgumentNullException(nameof(digest));
+            }
+
+            if (N is null)
+            {
+                throw new ArgumentNullException(nameof(N));
+            }
+
             BigInteger M1 = HashPaddedTriplet(digest, N, A, B, S);
             return M1;
         }
@@ -188,6 +303,16 @@ namespace TuviSRPLib
          */
         public static BigInteger CalculateM2(IDigest digest, BigInteger N, BigInteger A, BigInteger M1, BigInteger S)
         {
+            if (digest is null)
+            {
+                throw new ArgumentNullException(nameof(digest));
+            }
+
+            if (N is null)
+            {
+                throw new ArgumentNullException(nameof(N));
+            }
+
             BigInteger M2 = HashPaddedTriplet(digest, N, A, M1, S);
             return M2;
         }
@@ -201,6 +326,16 @@ namespace TuviSRPLib
          */
         public static BigInteger CalculateKey(IDigest digest, BigInteger N, BigInteger S)
         {
+            if (digest is null)
+            {
+                throw new ArgumentNullException(nameof(digest));
+            }
+
+            if (N is null)
+            {
+                throw new ArgumentNullException(nameof(N));
+            }
+
             int paddedLength = (N.BitLength + 7) / 8;
             int digestSize = digest.GetDigestSize();
 
