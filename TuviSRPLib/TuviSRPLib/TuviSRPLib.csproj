@@ -5,6 +5,8 @@
     <AssemblyTitle>Tuvi Proton SRP Library ($(TargetFramework))</AssemblyTitle>
     <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
 	<AnalysisLevel>6.0-all</AnalysisLevel>
+	<EnableNETAnalyzers>true</EnableNETAnalyzers>
+	<AnalysisMode>AllEnabledByDefault</AnalysisMode>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
