@@ -1,11 +1,11 @@
-﻿using System;
-using System.Linq;
-using System.Text;
-using Org.BouncyCastle.Crypto;
+﻿using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Math;
 using Org.BouncyCastle.Security;
 using Org.BouncyCastle.Utilities.Encoders;
+using System;
+using System.Linq;
+using System.Text;
 
 namespace TuviSRPLib
 {
@@ -16,38 +16,58 @@ namespace TuviSRPLib
     /// </summary>
     public partial class ProtonSRPClient
     {
-        protected BigInteger N;
-        protected BigInteger g; // In Proton g = 2 always
+        protected BigInteger N { get; set; }
+        protected BigInteger g { get; set; } // In Proton g = 2 always
 
-        protected BigInteger privA;
-        protected BigInteger pubA;
+        protected BigInteger privA { get; set; }
+        protected BigInteger pubA { get; set; }
 
-        protected BigInteger B;
+        protected BigInteger B { get; set; }
 
-        protected BigInteger x;
-        protected BigInteger u;
-        protected BigInteger S;
+        protected BigInteger x { get; set; }
+        protected BigInteger u { get; set; }
+        protected BigInteger S { get; set; }
 
-        protected BigInteger M1;
-        protected BigInteger M2;
-        protected BigInteger Key;
+        protected BigInteger M1 { get; set; }
+        protected BigInteger M2 { get; set; }
+        protected BigInteger Key { get; set; }
 
-        protected IDigest digest;
-        protected SecureRandom random;
+        protected IDigest digest { get; set; }
+        protected SecureRandom random { get; set; }
 
         public ProtonSRPClient()
         {
         }
 
         /**
-	     * Initialises the client to begin new authentication attempt
-	     * @param N The safe prime associated with the client's verifier
-	     * @param g The group parameter associated with the client's verifier
-	     * @param digest The digest algorithm associated with the client's verifier
-	     * @param random For key generation
-	     */
+         * Initialises the client to begin new authentication attempt
+         * @param N The safe prime associated with the client's verifier
+         * @param g The group parameter associated with the client's verifier
+         * @param digest The digest algorithm associated with the client's verifier
+         * @param random For key generation
+         */
         public virtual void Init(BigInteger N, BigInteger g, IDigest digest, SecureRandom random)
         {
+            if (N is null)
+            {
+                throw new ArgumentNullException(nameof(N));
+            }
+
+            if (g is null)
+            {
+                throw new ArgumentNullException(nameof(g));
+            }
+
+            if (digest is null)
+            {
+                throw new ArgumentNullException(nameof(digest));
+            }
+
+            if (random is null)
+            {
+                throw new ArgumentNullException(nameof(random));
+            }
+
             // According to ProtonMail documentation N size should be 2048 bits.
             int bitSize = 2048;
             int bitInByte = sizeof(byte) * 8;
@@ -74,6 +94,21 @@ namespace TuviSRPLib
 
         public virtual void Init(Srp6GroupParameters group, IDigest digest, SecureRandom random)
         {
+            if (group is null)
+            {
+                throw new ArgumentNullException(nameof(group));
+            }
+
+            if (digest is null)
+            {
+                throw new ArgumentNullException(nameof(digest));
+            }
+
+            if (random is null)
+            {
+                throw new ArgumentNullException(nameof(random));
+            }
+
             Init(group.N, group.G, digest, random);
         }
 
@@ -82,6 +117,21 @@ namespace TuviSRPLib
             if (string.IsNullOrEmpty(base64N))
             {
                 throw new ArgumentException("Parameter can not be null or empty", nameof(base64N));
+            }
+
+            if (g is null)
+            {
+                throw new ArgumentNullException(nameof(g));
+            }
+
+            if (digest is null)
+            {
+                throw new ArgumentNullException(nameof(digest));
+            }
+
+            if (random is null)
+            {
+                throw new ArgumentNullException(nameof(random));
             }
 
             var decodedBase64N = Base64.Decode(base64N);
@@ -103,12 +153,12 @@ namespace TuviSRPLib
         }
 
         /**
-	     * Generates client's credentials given the client's salt and password. 
-	     * Proton SRP protocol doesn't use UserName(Identity) calculating Verifier.
-	     * @param salt The salt used in the client's verifier.
-	     * @param password The user's password
-	     * @return Client's public value to send to server
-	     */
+         * Generates client's credentials given the client's salt and password. 
+         * Proton SRP protocol doesn't use UserName(Identity) calculating Verifier.
+         * @param salt The salt used in the client's verifier.
+         * @param password The user's password
+         * @return Client's public value to send to server
+         */
         public virtual BigInteger GenerateClientCredentials(byte[] salt, byte[] password)
         {
             if (salt is null)
@@ -152,11 +202,11 @@ namespace TuviSRPLib
         }
 
         /**
-	     * Generates client's verification message given the server's credentials
-	     * @param serverB The server's credentials
-	     * @return Client's verification message for the server
-	     * @throws CryptoException If server's credentials are invalid
-	     */
+         * Generates client's verification message given the server's credentials
+         * @param serverB The server's credentials
+         * @return Client's verification message for the server
+         * @throws CryptoException If server's credentials are invalid
+         */
         public virtual BigInteger CalculateSecret(BigInteger serverB)
         {
             this.B = ProtonSRPUtilities.ValidatePublicValue(N, serverB);
@@ -202,11 +252,11 @@ namespace TuviSRPLib
         }
 
         /**
-	     * Computes the client evidence message M1 using the previously received values.
-	     * To be called after calculating the secret S.
-	     * @return M1: the client side generated evidence message
-	     * @throws CryptoException
-	     */
+         * Computes the client evidence message M1 using the previously received values.
+         * To be called after calculating the secret S.
+         * @return M1: the client side generated evidence message
+         * @throws CryptoException
+         */
         public virtual BigInteger CalculateClientEvidenceMessage()
         {
             // Verify pre-requirements
@@ -221,10 +271,10 @@ namespace TuviSRPLib
         }
 
         /** Authenticates the server evidence message M2 received and saves it only if correct.
-	     * @param M2: the server side generated evidence message
-	     * @return A boolean indicating if the server message M2 was the expected one.
-	     * @throws CryptoException
-	     */
+         * @param M2: the server side generated evidence message
+         * @return A boolean indicating if the server message M2 was the expected one.
+         * @throws CryptoException
+         */
         public virtual bool VerifyServerEvidenceMessage(BigInteger serverM2)
         {
             // Verify pre-requirements
@@ -258,11 +308,11 @@ namespace TuviSRPLib
         }
 
         /**
-	     * Computes the final session key as a result of the SRP successful mutual authentication
-	     * To be called after verifying the server evidence message M2.
-	     * @return Key: the mutually authenticated symmetric session key
-	     * @throws CryptoException
-	     */
+         * Computes the final session key as a result of the SRP successful mutual authentication
+         * To be called after verifying the server evidence message M2.
+         * @return Key: the mutually authenticated symmetric session key
+         * @throws CryptoException
+         */
         public virtual BigInteger CalculateSessionKey()
         {
             // Verify pre-requirements (here we enforce a previous calculation of M1 and M2)

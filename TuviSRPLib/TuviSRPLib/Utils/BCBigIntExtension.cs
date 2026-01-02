@@ -17,6 +17,11 @@ namespace TuviSRPLib.Utils
         /// <returns>Byte array with big-endian format.</returns>
         public static byte[] ToLowEndianByteArray(this BigInteger number)
         {
+            if (number is null)
+            {
+                throw new ArgumentNullException(nameof(number));
+            }
+
             return number.ToByteArrayUnsigned().Reverse().ToArray();
         }
 
@@ -28,6 +33,11 @@ namespace TuviSRPLib.Utils
         /// <returns>Byte array.</returns>
         public static byte[] ToLowEndianNByteArray(this BigInteger number, int N = 256)
         {
+            if (number is null)
+            {
+                throw new ArgumentNullException(nameof(number));
+            }
+
             byte[] bytes = new byte[N];
             byte[] numberBytes = number.ToByteArrayUnsigned();
 
@@ -46,6 +56,11 @@ namespace TuviSRPLib.Utils
         /// <returns>Base64 string.</returns>
         public static string ToBase64(this BigInteger number)
         {
+            if (number is null)
+            {
+                throw new ArgumentNullException(nameof(number));
+            }
+
             byte[] bytes = number.ToLowEndianByteArray();
             return Base64.ToBase64String(bytes);
         }
