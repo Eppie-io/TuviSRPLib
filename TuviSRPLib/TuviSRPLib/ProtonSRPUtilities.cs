@@ -151,7 +151,7 @@ namespace TuviSRPLib
                 newPassword = password.Take(MaxPasswordBytes).ToArray();
             }
 
-            var hashedPassword = BCrypt.Generate(newPassword, salt.AsSpan(0, SaltLen).ToArray(), Cost); // Function HashBytes, file https://github.com/ProtonMail/bcrypt/blob/master/bcrypt.go, row 176
+            var hashedPassword = BCrypt.Generate(newPassword, salt.AsSpan(0, SaltLen).ToArray(), Cost, false); // Function HashBytes, file https://github.com/ProtonMail/bcrypt/blob/master/bcrypt.go, row 176
             return FormBcryptString(salt, hashedPassword);
         }
 
